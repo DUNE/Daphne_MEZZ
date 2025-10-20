@@ -39,7 +39,7 @@ port(
     mux_en: out std_logic_vector(1 downto 0); -- analog mux enables
     mux_a: out std_logic_vector(1 downto 0); -- analog mux selects
     stat_led: out std_logic_vector(5 downto 0); -- general purpose LEDs
-    version: in std_logic_vector(27 downto 0); -- GIT version number
+    version: in std_logic_vector(3 downto 0); -- GIT version number
     core_chan_enable: out std_logic_vector(39 downto 0); -- channel enables for self-trig core
   
     -- AXI-LITE interface
@@ -104,7 +104,7 @@ architecture stuff_arch of stuff is
     signal stat_led_reg: std_logic_vector(5 downto 0) := "000000";
     signal hvbias_en_reg: std_logic := '0';
     signal mux_a_reg, mux_en_reg: std_logic_vector(1 downto 0) := "00";
-    signal core_enable_reg: std_logic_vector(39 downto 0) := DEFAULT_core_enable;
+    signal core_enable_reg: std_logic_vector(39 downto 0);
 
     -- register offsets are relative to the base address specified for this AXI-LITE slave instance
 
@@ -391,17 +391,17 @@ end process;
 
 reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
 
-reg_data_out <= (X"000000" & fan_speed_reg)                    when (axi_araddr(5 downto 0)=FANCTRL_OFFSET) else
-                (X"00000" & fan0_rpm)                          when (axi_araddr(5 downto 0)=FAN0SPD_OFFSET) else
-                (X"00000" & fan1_rpm)                          when (axi_araddr(5 downto 0)=FAN1SPD_OFFSET) else
-                (X"0000000" & "000" & hvbias_en_reg)           when (axi_araddr(5 downto 0)=HVBIAS_OFFSET) else
-                (X"0000000" & "00" & mux_en_reg)               when (axi_araddr(5 downto 0)=MUXEN_OFFSET) else
-                (X"0000000" & "00" & mux_a_reg)                when (axi_araddr(5 downto 0)=MUXA_OFFSET) else
-                (X"000000" & "00" & stat_led_reg)              when (axi_araddr(5 downto 0)=LED_OFFSET) else
-                ("0000" & version)                             when (axi_araddr(5 downto 0)=VER_OFFSET) else
-                core_enable_reg(31 downto 0)                   when (axi_araddr(5 downto 0)=CORE_EN_LO_OFFSET) else
-                (X"000000" & core_enable_reg(39 downto 32))    when (axi_araddr(5 downto 0)=CORE_EN_HI_OFFSET) else
-                X"00000000";
+--reg_data_out <= (X"000000" & fan_speed_reg)                    when (axi_araddr(5 downto 0)=FANCTRL_OFFSET) else
+ --               (X"00000" & fan0_rpm)                          when (axi_araddr(5 downto 0)=FAN0SPD_OFFSET) else
+--                (X"00000" & fan1_rpm)                          when (axi_araddr(5 downto 0)=FAN1SPD_OFFSET) else
+---                (X"0000000" & "000" & hvbias_en_reg)           when (axi_araddr(5 downto 0)=HVBIAS_OFFSET) else
+ --               (X"0000000" & "00" & mux_en_reg)               when (axi_araddr(5 downto 0)=MUXEN_OFFSET) else
+ --               (X"0000000" & "00" & mux_a_reg)                when (axi_araddr(5 downto 0)=MUXA_OFFSET) else
+ --               (X"000000" & "00" & stat_led_reg)              when (axi_araddr(5 downto 0)=LED_OFFSET) else
+ --               ("0000000" & version)                          when (axi_araddr(5 downto 0)=VER_OFFSET) else
+  --              core_enable_reg(31 downto 0)                   when (axi_araddr(5 downto 0)=CORE_EN_LO_OFFSET) else
+ --               (X"000000" & core_enable_reg(39 downto 32))    when (axi_araddr(5 downto 0)=CORE_EN_HI_OFFSET) else
+ --               X"00000000";
 
 -- Output register or memory read data
 process( S_AXI_ACLK ) is

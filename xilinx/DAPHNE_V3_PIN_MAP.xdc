@@ -55,7 +55,7 @@
 #set_clock_groups -name exclusive_clk -physically_exclusive -group [get_clocks {clk500   clk_serdes_INTERNAL_DIVCLK2}]
 # define clock groups this is how we tell vivado which clocks are related and which are NOT
 #create_clock -period 6.400 -name eth_clk -add [get_clocks {clk_pl_2}]
-create_generated_clock -name clk125 -source [get_pins  -regexp .*mmcm1_clkout0.*] -master_clock [get_clocks mmcm1_clkout0] [get_pins -regexp .*mmcm1_clk2_inst.*]
+#create_generated_clock -name clk125 -source [get_pins  -regexp .*mmcm1_clkout0.*] -master_clock [get_clocks mmcm1_clkout0] [get_pins -regexp .*mmcm1_clk2_inst.*]
 
 set_false_path -from [get_clocks -regexp .*mmcm1_clkout0.*] -to [get_clocks -regexp .*mmcm1_clkout1.*]
 
@@ -69,8 +69,8 @@ set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {mmcm1_clkout1}]
 #set_false_path -from [get_clocks {clk_pl_3}] -to [get_clocks {clk_pl_2}]
 #set_false_path -from [get_clocks {mmcm1_clkout2}] -to [get_clocks {clk_pl_2}]
 set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {clk125}]
-#set_false_path -from [get_clocks {mmcm0_clkout2}] -to [get_clocks {clk_pl_2}]
-#set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {eth_clk}]
+#set_false_path -from [get_clocks {mmcm1_clkout1}] -to [get_clocks {clk_pl_2}]
+#set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {clk_pl_2}]
 #set_false_path -from [get_clocks {clk_pl_1}] -to [get_clocks {eth_clk}]
 #set_false_path -from [get_clocks {DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout1}] -to [get_clocks {clock}]
 #set_false_path -from [get_clocks {clk500}] -to [get_clocks {clk125_1}]
@@ -144,21 +144,23 @@ set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {clk125}]
 
 #SFPs DAQ Control signals
 
-set_property PACKAGE_PIN W10  [get_ports SFP_GTH0_TX_DIS] ;  # pin location SOM240_2_A46
-set_property IOSTANDARD LVTTL [get_ports SFP_GTH0_TX_DIS];
+set_property PACKAGE_PIN W10  [get_ports {GTH_TX_DIS[0]}] ;  # pin location SOM240_2_A46
+set_property IOSTANDARD LVTTL [get_ports {GTH_TX_DIS[0]}];
 #set_property PACKAGE_PIN Y10      [get_ports {SFP_GTH0_ABS}]   # pin location SOM240_2_A47
 #set_property PACKAGE_PIN Y9       [get_ports {SFP_GTH0_LOS}]   # pin location SOM240_2_A48
 
-#set_property PACKAGE_PIN AA10     [get_ports SFP_GTH1TX_DIS]   # pin location SOM240_2_B48
-#set_property IOSTANDARD LVTTL     [get_ports SFP_GTH1TX_DIS]
+set_property PACKAGE_PIN AA10     [get_ports {GTH_TX_DIS[1]}];   # pin location SOM240_2_B48
+set_property IOSTANDARD LVTTL     [get_ports {GTH_TX_DIS[1]}];
 #set_property PACKAGE_PIN AB11     [get_ports {SFP_GTH1_ABS}]   # pin location SOM240_2_B49
 #set_property PACKAGE_PIN AA8      [get_ports {SFP_GTH1_LOS}]   # pin location SOM240_2_A50
 
-#set_property PACKAGE_PIN AC11     [get_ports {SFP_GTH2_TX_DIS}]   # pin location SOM240_2_B50
+set_property PACKAGE_PIN AC11     [get_ports {GTH_TX_DIS[2]}] ;  # pin location SOM240_2_B50
+set_property IOSTANDARD LVTTL [get_ports {GTH_TX_DIS[2]}];
 #set_property PACKAGE_PIN AB10     [get_ports {SFP_GTH2_ABS}]   # pin location SOM240_2_A51
 #set_property PACKAGE_PIN AA13     [get_ports {SFP_GTH2_LOS}]   # pin location SOM240_2_B52
 
-#set_property PACKAGE_PIN AB9      [get_ports {SFP_GTH3_TX_DIS}]   # pin location SOM240_2_A52
+set_property PACKAGE_PIN AB9      [get_ports {GTH_TX_DIS[3]}] ;  # pin location SOM240_2_A52
+set_property IOSTANDARD LVTTL [get_ports {GTH_TX_DIS[3]}];
 #set_property PACKAGE_PIN AB13     [get_ports {SFP_GTH3_ABS}]   # pin location SOM240_2_B53
 #set_property PACKAGE_PIN W14      [get_ports {SFP_GTH3_LOS}]   # pin location SOM240_2_B54
 
@@ -198,8 +200,8 @@ set_property IOSTANDARD LVTTL [get_ports IIC_0_sda_io];
 #set_property IOSTANDARD LVDS [get_ports GTH0_REFCLK_P]
 #set_property IOSTANDARD LVDS [get_ports GTH0_REFCLK_N]
 
-set_property PACKAGE_PIN Y6       [get_ports GTH0_REFCLK_P]  ; # pin location SOM240_2_C3
-set_property PACKAGE_PIN Y5       [get_ports GTH0_REFCLK_N] ;  # pin location SOM240_2_C4
+set_property PACKAGE_PIN Y6       [get_ports eth_clk_p]  ; # pin location SOM240_2_C3
+set_property PACKAGE_PIN Y5       [get_ports eth_clk_n] ;  # pin location SOM240_2_C4
 
 #set_property IOSTANDARD LVDS [get_ports GTH0_REFCLK_P];
 #set_property IOSTANDARD LVDS [get_ports GTH0_REFCLK_N];
@@ -222,35 +224,35 @@ set_property IOSTANDARD LVDS [get_ports afe_clk_n];
 
 # DAQ RX-TX DATA LINE FOR SFPs
 
-set_property PACKAGE_PIN Y2       [get_ports RX0_GTH_P] ;  # pin location SOM240_2_B9
-set_property PACKAGE_PIN Y1       [get_ports RX0_GTH_N]  ; # pin location SOM240_2_B10
-set_property PACKAGE_PIN W4       [get_ports TX0_GTH_P]  ; # pin location SOM240_2_D9
-set_property PACKAGE_PIN W3       [get_ports TX0_GTH_N]  ; # pin location SOM240_2_D10
+set_property PACKAGE_PIN Y2       [get_ports {RX_GTH_p[0]}] ;  # pin location SOM240_2_B9
+set_property PACKAGE_PIN Y1       [get_ports {RX_GTH_n[0]}]  ; # pin location SOM240_2_B10
+set_property PACKAGE_PIN W4       [get_ports {TX_GTH_p[0]}]  ; # pin location SOM240_2_D9
+set_property PACKAGE_PIN W3       [get_ports {TX_GTH_n[0]}]  ; # pin location SOM240_2_D10
 
 #set_property IOSTANDARD LVDS [get_ports RX0_GTH_P];
 #set_property IOSTANDARD LVDS [get_ports RX0_GTH_N];
 #set_property IOSTANDARD LVDS [get_ports TX0_GTH_P];
 #set_property IOSTANDARD LVDS [get_ports TX0_GTH_N];
 
-#set_property PACKAGE_PIN V2       [get_ports {RX1_GTH_P}]   # pin location SOM240_2_D1
-#set_property PACKAGE_PIN V1       [get_ports {RX1_GTH_N}]   # pin location SOM240_2_D2
-#set_property PACKAGE_PIN U4       [get_ports {TX1_GTH_P}]   # pin location SOM240_2_C7
-#set_property PACKAGE_PIN U3       [get_ports {TX1_GTH_N}]   # pin location SOM240_2_C8
+set_property PACKAGE_PIN V2       [get_ports {RX_GTH_p[1]}] ;  # pin location SOM240_2_D1
+set_property PACKAGE_PIN V1       [get_ports {RX_GTH_n[1]}]  ; # pin location SOM240_2_D2
+set_property PACKAGE_PIN U4       [get_ports {TX_GTH_p[1]}]  ; # pin location SOM240_2_C7
+set_property PACKAGE_PIN U3       [get_ports {TX_GTH_n[1]}]  ; # pin location SOM240_2_C8
 
 #set_property IOSTANDARD LVDS [get_ports RX1_GTH_P]
 #set_property IOSTANDARD LVDS [get_ports RX1_GTH_N]
 #set_property IOSTANDARD LVDS [get_ports TX1_GTH_P]
 #set_property IOSTANDARD LVDS [get_ports TX1_GTH_N]
 
-#set_property PACKAGE_PIN P2       [get_ports {RX2_GTH_P}]   # pin location SOM240_2_D5
-#set_property PACKAGE_PIN P1       [get_ports {RX2_GTH_N}]   # pin location SOM240_2_D6
-#set_property PACKAGE_PIN N4       [get_ports {TX2_GTH_P}]   # pin location SOM240_2_A3
-#set_property PACKAGE_PIN N3       [get_ports {TX2_GTH_N}]   # pin location SOM240_2_A4
+set_property PACKAGE_PIN P2       [get_ports {RX_GTH_p[2]}]  ; # pin location SOM240_2_D5
+set_property PACKAGE_PIN P1       [get_ports {RX_GTH_n[2]}]  ; # pin location SOM240_2_D6
+set_property PACKAGE_PIN N4       [get_ports {TX_GTH_p[2]}]  ; # pin location SOM240_2_A3
+set_property PACKAGE_PIN N3       [get_ports {TX_GTH_n[2]}]  ; # pin location SOM240_2_A4
 
-#set_property PACKAGE_PIN T2       [get_ports {RX3_GTH_P}]   # pin location SOM240_2_B1
-#set_property PACKAGE_PIN T1       [get_ports {RX3_GTH_N}]   # pin location SOM240_2_B2
-#set_property PACKAGE_PIN R4       [get_ports {TX3_GTH_P}]   # pin location SOM240_2_B5
-#set_property PACKAGE_PIN R3       [get_ports {TX3_GTH_N}]   # pin location SOM240_2_B6
+set_property PACKAGE_PIN T2       [get_ports {RX_GTH_p[3]}] ;  # pin location SOM240_2_B1
+set_property PACKAGE_PIN T1       [get_ports {RX_GTH_n[3]}]  ; # pin location SOM240_2_B2
+set_property PACKAGE_PIN R4       [get_ports {TX_GTH_p[3]}] ;  # pin location SOM240_2_B5
+set_property PACKAGE_PIN R3       [get_ports {TX_GTH_n[3]}]  ; # pin location SOM240_2_B6
 
 #Timinng SFP ---- including the controll signals-------
 

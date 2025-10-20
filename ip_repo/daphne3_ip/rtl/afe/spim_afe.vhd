@@ -208,13 +208,13 @@ busy0 <= afe_busy(0) or trim_busy(0) or offset_busy(0);
 afe12_sclk <= afe_sclk(1) and trim_sclk(1) and offset_sclk(1) and afe_sclk(2) and trim_sclk(2) and offset_sclk(2);
 afe12_mosi <= afe_mosi(1) or  trim_mosi(1) or  offset_mosi(1) or  afe_mosi(2) or  trim_mosi(2) or  offset_mosi(2);
 afe_miso(1) <= afe12_miso;
---afe_miso(2) <= afe12_miso;
+afe_miso(2) <= afe12_miso;
 busy12 <= afe_busy(1) or trim_busy(1) or offset_busy(1) or afe_busy(2) or trim_busy(2) or offset_busy(2);
 
 afe34_sclk <= afe_sclk(3) and trim_sclk(3) and offset_sclk(3) and afe_sclk(4) and trim_sclk(4) and offset_sclk(4);
 afe34_mosi <= afe_mosi(3) or  trim_mosi(3) or  offset_mosi(3) or  afe_mosi(4) or  trim_mosi(4) or  offset_mosi(4);
---afe_miso(1) <= afe34_miso;
-afe_miso(2) <= afe34_miso;
+afe_miso(3) <= afe34_miso;
+afe_miso(4) <= afe34_miso;
 busy34 <= afe_busy(3) or trim_busy(3) or offset_busy(3) or afe_busy(4) or trim_busy(4) or offset_busy(4);
 
 -- AXI LITE slave logic (adapted from Xilinx IP generator AXI-LITE slave example)

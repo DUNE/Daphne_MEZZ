@@ -270,23 +270,24 @@ It is strongly recommended to NOT use the Vivado GUI (Project Mode) to build thi
 
         1. Run Vivado in TCL mode.
         2. Navigate to the location of the xilinx directory of the folder where the repo was cloned.
-        3. Make sure you get the git commit number first in the TCL environment.
+        3. Make sure you get the git commit number first in the TCL environment (This one's more tricky now since the version was cut in the last update!)
         4. Source the Block Design generation file.
         5. Start the GUI and magic will happen.
 
         ```tcl
         $ cd src/xilinx
         $ set git_sha [exec git rev-parse --short=7 HEAD]
-        $ set v_git_sha "28'h$git_sha"
+        $ set aux_git_sha [string range $git_sha 0 0]
+        $ set v_git_sha "4'h$aux_git_sha"
         $ source daphne3_bd_gen.tcl
         $ start_gui
         ```
 
 3. Once both the DAPHNE3 IP and the Block Design have been created, the batch file creates a wrapper for the TOP level fo the Block Design, generates all the necessary outputs of each IP (wrappers, constraints, and so on) and then starts the design building process, by running the synthesis, then implementation, and then the bitstream (In a super summarized way of saying it).        
 
-## Does it meet timing?
+## How do I know if it meets timing?
 
-The timing constraints for this design were written after finishing the process, look for the file:
+After finishing the process, look for the file:
 
     src/xilinx/output/post_route_timing_summary.rpt
 
@@ -298,7 +299,7 @@ Output files are usually ZIPPED up and attached to each commit in the comments s
 
 ## What are we missing?
 
-The design was pretty much written for a Windows version, but fully automatic generation of device tree overlay on Linux is available too. Windows does not allow the process to run fully automatic, as the `vivado_batch.tcl` script generates up to the `pl.dts - pl.dtsi` files, the user must run the `dtc` command by either using a Windows Subsystem for Linux installation (safer way), or a Machine that runs Linux as its OS, in order to generate both `pl.dtbo` and `shell.json` files.
+The design was pretty much written for a Windows version, but fully automatic generation of device tree overlay on Linux is available too. Windows does not allow the process to run fully automatic, as the `vivado_batch.tcl` script generates up to the `pl.dts - pl.dtsi` files, the user must run the `dtc` command by either using a Windows Subsystem for Linux installation (safer way) or a Machine that runs Linux as its OS, in order to generate both `pl.dtbo` and `shell.json` files.
 
 - [x] Create Bitstream and Platform Files (`.bit .bin .xsa .dts .dtsi`).
 - [x] Manually generate Device Tree Overlay Files (`.dtbo`) using WSL.

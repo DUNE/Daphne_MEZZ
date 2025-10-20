@@ -87,12 +87,12 @@ set ipRepoDir ../ip_repo/daphne3_ip
 # set axiIICXCIDir ../ip_repo/daphne3_ip/ips/i2c/axi_iic_0.xci
 
 # set repository for BRAM controller IP axi4_lite_bram_ctrl_0
-set bramRepoDir ../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.0/src
-set bramXCIDir ../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.0/src/axi4_lite_bram_ctrl_0/axi4_lite_bram_ctrl_0.xci
+set bramRepoDir ../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.1/src
+set bramXCIDir ../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.1/src/axi4_lite_bram_ctrl_0/axi4_lite_bram_ctrl_0.xci
 
 # set repository for Ethernet IP
-set ethernetRepoDir ../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.0/src
-set ethXCIDir ../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.0/src/xxv_ethernet_0/xxv_ethernet_0.xci
+set ethernetRepoDir ../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.1/src
+set ethXCIDir ../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.1/src/xxv_ethernet_0/xxv_ethernet_0.xci
 
 # # build the internal sub IPs used in the design
 # # axi quad SPI IP
@@ -222,9 +222,9 @@ set rtlDir [file normalize "../ip_repo/daphne3_ip/rtl"]
 set tbDir [file normalize "../ip_repo/daphne3_ip/sim"]
 set constDir [file normalize "../ip_repo/daphne3_ip/constraints"]
 set xciDir [file normalize "../ip_repo/daphne3_ip/ips"]
-set rtlDAQDir [file normalize "../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.0/src"]
-set constDAQDir [file normalize "../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.0/src"]
-set tclConstDir [file normalize "../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.0/src"]
+set rtlDAQDir [file normalize "../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.1/src"]
+set constDAQDir [file normalize "../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.1/src"]
+set tclConstDir [file normalize "../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.1/src"]
 
 # obtain all of the rtl files (.vhdl .vhd .v .sv) of the project for later inclusion in the IP design
 
@@ -234,7 +234,7 @@ set xciDAQFiles_aux [get_files_recursive $rtlDAQDir "*.xci"]
 set xciDAQFiles [ignore_files $xciDAQFiles_aux "xxv_ethernet_0_gt.xci"]
 
 set vhdlFiles_aux [get_files_recursive $rtlDir "*.vhd"]
-set vhdlFiles [ignore_files $vhdlFiles_aux {"daphne3.vhd" "auto_afe.vhd" "auto_fsm.vhd" "i2cm.vhd" "spim_cm.vhd" "DAQ_CLOCKS.vhd" }]
+set vhdlFiles [ignore_files $vhdlFiles_aux {"daphne3.vhd" "auto_afe.vhd" "auto_fsm.vhd" "i2cm.vhd" "spim_cm.vhd" "DAQ_CLOCKS.vhd" "stream_input_mux.vhd" "stream_top_wrapper.vhd" "stream8.vhd"}]
 set verilogFiles [get_files_recursive $rtlDir "*.v"]
 
 set tbFilesVhdl [get_files_recursive $tbDir "*.vhd"]
@@ -292,24 +292,24 @@ foreach daqIPType $xciDAQFiles {
 }
 
 # ethernet sub core must be in implementation files group
-ipx::add_file -name [file normalize "../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.0/src/xxv_ethernet_0/xxv_ethernet_0.xci"] -file_group $impl_files
+ipx::add_file -name [file normalize "../ip_repo/daphne3_ip/src/dune.daq_user_hermes_daphne_1.1/src/xxv_ethernet_0/xxv_ethernet_0.xci"] -file_group $impl_files
 
 # # obtain the specific .xci files
 set anylanguageSynthFg [ipx::get_file_groups xilinx_anylanguagesynthesis -of_objects $daphne]
 set anybehavioralSynthFg [ipx::get_file_groups xilinx_anylanguagebehavioralsimulation -of_objects $daphne]
 set implFg [ipx::get_file_groups xilinx_implementation -of_objects $daphne]
-set ethFileObjLan [ipx::get_files "src/dune.daq_user_hermes_daphne_1.0/src/xxv_ethernet_0/xxv_ethernet_0.xci" -of_objects $anylanguageSynthFg]
-set bramFileObjLan [ipx::get_files "src/dune.daq_user_hermes_daphne_1.0/src/axi4_lite_bram_ctrl_0/axi4_lite_bram_ctrl_0.xci" -of_objects $anylanguageSynthFg]
-set ethFileObjSim [ipx::get_files "src/dune.daq_user_hermes_daphne_1.0/src/xxv_ethernet_0/xxv_ethernet_0.xci" -of_objects $anybehavioralSynthFg]
-set bramFileObjSim [ipx::get_files "src/dune.daq_user_hermes_daphne_1.0/src/axi4_lite_bram_ctrl_0/axi4_lite_bram_ctrl_0.xci" -of_objects $anybehavioralSynthFg]
-set implFileObj [ipx::get_files "src/dune.daq_user_hermes_daphne_1.0/src/xxv_ethernet_0/xxv_ethernet_0.xci" -of_objects $implFg]
+set ethFileObjLan [ipx::get_files "src/dune.daq_user_hermes_daphne_1.1/src/xxv_ethernet_0/xxv_ethernet_0.xci" -of_objects $anylanguageSynthFg]
+set bramFileObjLan [ipx::get_files "src/dune.daq_user_hermes_daphne_1.1/src/axi4_lite_bram_ctrl_0/axi4_lite_bram_ctrl_0.xci" -of_objects $anylanguageSynthFg]
+set ethFileObjSim [ipx::get_files "src/dune.daq_user_hermes_daphne_1.1/src/xxv_ethernet_0/xxv_ethernet_0.xci" -of_objects $anybehavioralSynthFg]
+set bramFileObjSim [ipx::get_files "src/dune.daq_user_hermes_daphne_1.1/src/axi4_lite_bram_ctrl_0/axi4_lite_bram_ctrl_0.xci" -of_objects $anybehavioralSynthFg]
+set implFileObj [ipx::get_files "src/dune.daq_user_hermes_daphne_1.1/src/xxv_ethernet_0/xxv_ethernet_0.xci" -of_objects $implFg]
 
 # set property for cell name
-set_property CELL_NAME core_inst/daphne_top_inst/mux/pcs_pma/phy_gen[0].phy_10gbe $ethFileObjLan
-set_property CELL_NAME core_inst/daphne_top_inst/ipb_ctrl/ipbus_transport_axil/axi_bram_ctrl $bramFileObjLan
-set_property CELL_NAME core_inst/daphne_top_inst/mux/pcs_pma/phy_gen[0].phy_10gbe $ethFileObjSim
-set_property CELL_NAME core_inst/daphne_top_inst/ipb_ctrl/ipbus_transport_axil/axi_bram_ctrl $bramFileObjSim
-set_property CELL_NAME core_inst/daphne_top_inst/mux/pcs_pma/phy_gen[0].phy_10gbe $implFileObj
+set_property CELL_NAME hermes_module_inst/daphne_streaming_top_inst/mux/pcs_pma/phy_gen[0].phy_10gbe $ethFileObjLan
+set_property CELL_NAME hermes_module_inst/daphne_streaming_top_inst/ipb_ctrl/ipbus_transport_axil/axi_bram_ctrl $bramFileObjLan
+set_property CELL_NAME hermes_module_inst/daphne_streaming_top_inst/mux/pcs_pma/phy_gen[0].phy_10gbe $ethFileObjSim
+set_property CELL_NAME hermes_module_inst/daphne_streaming_top_inst/ipb_ctrl/ipbus_transport_axil/axi_bram_ctrl $bramFileObjSim
+set_property CELL_NAME hermes_module_inst/daphne_streaming_top_inst/mux/pcs_pma/phy_gen[0].phy_10gbe $implFileObj
 
 # VHDL files
 foreach vhdlType $vhdlFiles {
@@ -325,11 +325,23 @@ foreach verilogType $verilogFiles {
 
 # 10Gig Sender VHDL files
 foreach daqVhdlType $vhdlDAQFiles {
+    # # the hermes module libraries are a mess in this last update, we need to discuss it!
+    # # obtain the name of the library/folder where this file is located
+    # set fileLibrary [file tail [file dirname $daqVhdlType]]
+
+    # add the files to their respective file group
     set fileObjSynth [ipx::add_file -name $daqVhdlType -file_group $lang_synth]
     set fileObjSim [ipx::add_file -name $daqVhdlType -file_group $lang_sim]
-    
+
+    # # set the proper library for the file
+    # if {![string match "daphne_streaming_top.vhd" $daqVhdlType]} {
+    #     # change the library name to be different than the default library "work"
+    #     set_property LIBRARY_NAME $fileLibrary $fileObjSynth
+    #     set_property LIBRARY_NAME $fileLibrary $fileObjSim
+    # }   
+
     # obtain only the file name of the file that was added
-    set fileName [file tail $daqVhdlType]
+    set fileName [file tail $daqVhdlType]    
 
     # if it is not in the exception list, set its property to vhdl 2008
     if {[lsearch -exact $wibTypeExceptionList $fileName] == -1} {
@@ -371,22 +383,106 @@ set daphne_ports [ipx::add_ports_from_hdl -top_level_hdl_file [file normalize ".
 
 # create the generic parameters of the design based on the TOP level generic
 set daphne_generics [ipx::add_model_parameters_from_hdl -top_level_hdl_file [file normalize "../ip_repo/daphne3_ip/rtl/daphne3.vhd"] -top_module_name DAPHNE3 -include_dirs [file normalize "../ip_repo/daphne3_ip/rtl"] $daphne]
-set_property DISPLAY_NAME Version [ipx::get_hdl_parameters -of_objects $daphne]
-set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne]
+set_property DISPLAY_NAME {N Src} [ipx::get_hdl_parameters -of_objects $daphne N_SRC]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne N_SRC]
+set_property DISPLAY_NAME {N Src} [ipx::get_hdl_parameters -of_objects $daphne N_MGT]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne N_MGT]
+set_property DISPLAY_NAME Version [ipx::get_hdl_parameters -of_objects $daphne version]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne version]
+set_property DISPLAY_NAME {Link ID} [ipx::get_hdl_parameters -of_objects $daphne link_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne link_id]
+set_property DISPLAY_NAME {Slot ID} [ipx::get_hdl_parameters -of_objects $daphne slot_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne slot_id]
+set_property DISPLAY_NAME {Crate ID} [ipx::get_hdl_parameters -of_objects $daphne crate_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne crate_id]
+set_property DISPLAY_NAME {Detector ID} [ipx::get_hdl_parameters -of_objects $daphne detector_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne detector_id]
+set_property DISPLAY_NAME Threshold [ipx::get_hdl_parameters -of_objects $daphne threshold]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne threshold]
+set_property DISPLAY_NAME {Version ID} [ipx::get_hdl_parameters -of_objects $daphne version_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne version_id]
+
+set num_in_mux_param [ipx::add_user_parameter N_SRC $daphne]
+set_property DISPLAY_NAME {N Src} $num_in_mux_param
+set_property VALUE 2 $num_in_mux_param
+set_property VALUE_FORMAT long $num_in_mux_param
+set_property VALUE_RESOLVE_TYPE user $num_in_mux_param
+set_property VALUE_PERMISSION user $num_in_mux_param
+set_property VALUE_VALIDATION_RANGE_MINIMUM 0 $num_in_mux_param
+# set_property VALUE_VALIDATION_TYPE range_long $num_in_mux_param
+
+set num_trn_param [ipx::add_user_parameter N_MGT $daphne]
+set_property DISPLAY_NAME {N Mgt} $num_trn_param
+set_property VALUE 4 $num_trn_param
+set_property VALUE_FORMAT long $num_trn_param
+set_property VALUE_RESOLVE_TYPE user $num_trn_param
+set_property VALUE_PERMISSION user $num_trn_param
+set_property VALUE_VALIDATION_RANGE_MINIMUM 0 $num_trn_param
+# set_property VALUE_VALIDATION_TYPE range_long $num_trn_param
 
 set version_param [ipx::add_user_parameter version $daphne]
 set_property DISPLAY_NAME Version $version_param
-set_property VALUE 0x1234567 $version_param
-set_property VALUE_BIT_STRING_LENGTH 28 $version_param
+set_property VALUE 0001 $version_param
+set_property VALUE_BIT_STRING_LENGTH 4 $version_param
 set_property VALUE_FORMAT bitString $version_param
 set_property VALUE_RESOLVE_TYPE user $version_param
 set_property VALUE_PERMISSION user $version_param
+
+set link_id_param [ipx::add_user_parameter link_id $daphne]
+set_property DISPLAY_NAME {Link ID} $link_id_param
+set_property VALUE 000000 $link_id_param
+set_property VALUE_BIT_STRING_LENGTH 6 $link_id_param
+set_property VALUE_FORMAT bitString $link_id_param
+set_property VALUE_RESOLVE_TYPE user $link_id_param
+set_property VALUE_PERMISSION user $link_id_param
+
+set slot_id_param [ipx::add_user_parameter slot_id $daphne]
+set_property DISPLAY_NAME {Slot ID} $slot_id_param
+set_property VALUE 0010 $slot_id_param
+set_property VALUE_BIT_STRING_LENGTH 4 $slot_id_param
+set_property VALUE_FORMAT bitString $slot_id_param
+set_property VALUE_RESOLVE_TYPE user $slot_id_param
+set_property VALUE_PERMISSION user $slot_id_param
+
+set crate_id_param [ipx::add_user_parameter crate_id $daphne]
+set_property DISPLAY_NAME {Crate ID} $crate_id_param
+set_property VALUE 0000000011 $crate_id_param
+set_property VALUE_BIT_STRING_LENGTH 10 $crate_id_param
+set_property VALUE_FORMAT bitString $crate_id_param
+set_property VALUE_RESOLVE_TYPE user $crate_id_param
+set_property VALUE_PERMISSION user $crate_id_param
+
+set detector_id_param [ipx::add_user_parameter detector_id $daphne]
+set_property DISPLAY_NAME {Detector ID} $detector_id_param
+set_property VALUE 000010 $detector_id_param
+set_property VALUE_BIT_STRING_LENGTH 6 $detector_id_param
+set_property VALUE_FORMAT bitString $detector_id_param
+set_property VALUE_RESOLVE_TYPE user $detector_id_param
+set_property VALUE_PERMISSION user $detector_id_param
+
+set threshold_param [ipx::add_user_parameter threshold $daphne]
+set_property DISPLAY_NAME Threshold $threshold_param
+set_property VALUE 1000000000 $threshold_param
+set_property VALUE_BIT_STRING_LENGTH 10 $threshold_param
+set_property VALUE_FORMAT bitString $threshold_param
+set_property VALUE_RESOLVE_TYPE user $threshold_param
+set_property VALUE_PERMISSION user $threshold_param
+
+set version_id_param [ipx::add_user_parameter version_id $daphne]
+set_property DISPLAY_NAME {Version ID} $version_id_param
+set_property VALUE 000001 $version_id_param
+set_property VALUE_BIT_STRING_LENGTH 6 $version_id_param
+set_property VALUE_FORMAT bitString $version_id_param
+set_property VALUE_RESOLVE_TYPE user $version_id_param
+set_property VALUE_PERMISSION user $version_id_param
 
 # list all the bus names used in the core
 set daphne_bus_interfaces {
     AFE_SPI_S_AXI
     END_P_S_AXI
     FRONT_END_S_AXI
+    MUX_S_AXI
+    OUTBUFF_S_AXI
     SPI_DAC_S_AXI
     SPY_BUF_S_S_AXI
     STUFF_S_AXI
@@ -494,6 +590,7 @@ set daphne_pl_clk_interfaces {
     afe_clk_p
     eth_clk_n
     eth_clk_p
+    out_buff_clk
 }
 
 # list all possible parameters for the daphne PL clock interfaces
@@ -685,7 +782,7 @@ foreach plClkInterface $daphne_pl_clk_interfaces {
     set_property PHYSICAL_NAME $plClkInterface $pl_clk_pm
 
     # set proper direction of interface for output ports
-    if {[string match "afe_clk_*" $plClkInterface]} {
+    if {[string match "afe_clk_*" $plClkInterface] || [string match "out_buff_clk" $plClkInterface]} {
         set_property INTERFACE_MODE master $plClkInFace
     }
 
@@ -750,7 +847,15 @@ foreach memoryMapBus $daphne_bus_interfaces {
     set_property BASE_ADDRESS_BIT_STRING_LENGTH 1 $addrBlock
     set_property RANGE 0x100000000 $addrBlock
     set_property RANGE_FORMAT bitString $addrBlock
-    set_property RANGE_BIT_STRING_LENGTH 33 $addrBlock
+
+    # configure RANGE_BIT_STRING_LENGTH that is different (?) for the TRIGGER Interface (special conditional)
+    if {$memoryMapBus eq "TRIRG_S_AXI"} {
+        set_property RANGE_BIT_STRING_LENGTH 17 $addrBlock
+    } else {
+        set_property RANGE_BIT_STRING_LENGTH 33 $addrBlock
+    }
+
+    set_property RANGE_FORMAT bitString $addrBlock
     set_property RANGE_MINIMUM 4096 $addrBlock
     set_property USAGE register $addrBlock
     set_property WIDTH 32 $addrBlock

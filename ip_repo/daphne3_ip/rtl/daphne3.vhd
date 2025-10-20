@@ -15,7 +15,18 @@ use unisim.vcomponents.all;
 use work.daphne3_package.all;
 
 entity DAPHNE3 is
-generic(version: std_logic_vector(27 downto 0) := X"1234567"); -- git commit number is passed in from tcl build script
+generic(
+
+
+    N_SRC: positive  := 2;   -- each mux has 2 inputs
+    N_MGT: positive  := 4;    -- four transceivers
+    version: std_logic_vector(3 downto 0) := X"1" ;  -- firmware firsion
+    link_id: std_logic_vector(5 downto 0) := "000000";
+    slot_id: std_logic_vector(3 downto 0) := X"2";
+    crate_id: std_logic_vector(9 downto 0) := "0000000011";
+    detector_id: std_logic_vector(5 downto 0) := "000010";
+    threshold: in std_logic_vector(9 downto 0):= "1000000000";
+    version_id: std_logic_vector(5 downto 0) := "000001");  -- build virsion - to be updated everytime we build a new image
 port(
             
           
@@ -218,7 +229,7 @@ port(
 	
     TRIRG_S_AXI_ACLK: in std_logic;
     TRIRG_S_AXI_ARESETN: in std_logic;
-    TRIRG_S_AXI_AWADDR: in std_logic_vector(31 downto 0);
+    TRIRG_S_AXI_AWADDR: in std_logic_vector(15 downto 0);
     TRIRG_S_AXI_AWPROT: in std_logic_vector(2 downto 0);
     TRIRG_S_AXI_AWVALID: in std_logic;
     TRIRG_S_AXI_AWREADY: out std_logic;
@@ -229,7 +240,7 @@ port(
     TRIRG_S_AXI_BRESP: out std_logic_vector(1 downto 0);
     TRIRG_S_AXI_BVALID: out std_logic;
     TRIRG_S_AXI_BREADY: in std_logic;
-    TRIRG_S_AXI_ARADDR: in std_logic_vector(31 downto 0);
+    TRIRG_S_AXI_ARADDR: in std_logic_vector(15 downto 0);
     TRIRG_S_AXI_ARPROT: in std_logic_vector(2 downto 0);
     TRIRG_S_AXI_ARVALID: in std_logic;
     TRIRG_S_AXI_ARREADY: out std_logic;
@@ -263,34 +274,88 @@ port(
 	STUFF_S_AXI_RVALID	: out std_logic;
 	STUFF_S_AXI_RREADY	: in std_logic;
 	
+	--OUTBUTT_AXI
+	
+    OUTBUFF_S_AXI_ACLK: in std_logic;
+    OUTBUFF_S_AXI_ARESETN: in std_logic;
+	OUTBUFF_S_AXI_AWADDR	: in std_logic_vector(31 downto 0);
+	OUTBUFF_S_AXI_AWPROT	: in std_logic_vector(2 downto 0);
+	OUTBUFF_S_AXI_AWVALID	: in std_logic;
+	OUTBUFF_S_AXI_AWREADY	: out std_logic;
+	OUTBUFF_S_AXI_WDATA	    : in std_logic_vector(31 downto 0);
+	OUTBUFF_S_AXI_WSTRB	    : in std_logic_vector(3 downto 0);
+	OUTBUFF_S_AXI_WVALID	: in std_logic;
+	OUTBUFF_S_AXI_WREADY	: out std_logic;
+	OUTBUFF_S_AXI_BRESP	    : out std_logic_vector(1 downto 0);
+	OUTBUFF_S_AXI_BVALID	: out std_logic;
+	OUTBUFF_S_AXI_BREADY	: in std_logic;
+	OUTBUFF_S_AXI_ARADDR	: in std_logic_vector(31 downto 0);
+	OUTBUFF_S_AXI_ARPROT	: in std_logic_vector(2 downto 0);
+	OUTBUFF_S_AXI_ARVALID	: in std_logic;
+	OUTBUFF_S_AXI_ARREADY	: out std_logic;
+	OUTBUFF_S_AXI_RDATA	    : out std_logic_vector(31 downto 0);
+	OUTBUFF_S_AXI_RRESP	    : out std_logic_vector(1 downto 0);
+	OUTBUFF_S_AXI_RVALID	: out std_logic;
+	OUTBUFF_S_AXI_RREADY	: in std_logic;	
+	
+	-- channel mux AXI
+	
+	MUX_S_AXI_ACLK: in std_logic;
+    MUX_S_AXI_ARESETN: in std_logic;
+	MUX_S_AXI_AWADDR	: in std_logic_vector(31 downto 0);
+	MUX_S_AXI_AWPROT	: in std_logic_vector(2 downto 0);
+	MUX_S_AXI_AWVALID	: in std_logic;
+	MUX_S_AXI_AWREADY	: out std_logic;
+	MUX_S_AXI_WDATA	    : in std_logic_vector(31 downto 0);
+	MUX_S_AXI_WSTRB	    : in std_logic_vector(3 downto 0);
+	MUX_S_AXI_WVALID	: in std_logic;
+	MUX_S_AXI_WREADY	: out std_logic;
+	MUX_S_AXI_BRESP	    : out std_logic_vector(1 downto 0);
+	MUX_S_AXI_BVALID	: out std_logic;
+	MUX_S_AXI_BREADY	: in std_logic;
+	MUX_S_AXI_ARADDR	: in std_logic_vector(31 downto 0);
+	MUX_S_AXI_ARPROT	: in std_logic_vector(2 downto 0);
+	MUX_S_AXI_ARVALID	: in std_logic;
+	MUX_S_AXI_ARREADY	: out std_logic;
+	MUX_S_AXI_RDATA	    : out std_logic_vector(31 downto 0);
+	MUX_S_AXI_RRESP	    : out std_logic_vector(1 downto 0);
+	MUX_S_AXI_RVALID	: out std_logic; 
+	MUX_S_AXI_RREADY	: in std_logic;
+	
     -- 10G Ethernet sender interface to external MGT refclk LVDS 156.25MHz
-    --eth_clk: in std_logic ;
-    eth_clk_p: in std_logic;
-    eth_clk_n: in std_logic; 
-
+ 
+    eth_clk_p: in std_logic; -- I/O for mgt refclk 156.25MHz
+    eth_clk_n: in std_logic;
     -- 10G Ethernet sender interface to external SFP+ transceiver
+    eth_rx_p: in std_logic_vector(N_MGT-1 downto 0); -- I/O for SFPs
+    eth_rx_n: in std_logic_vector(N_MGT-1 downto 0);
+    eth_tx_p: out std_logic_vector(N_MGT-1 downto 0);
+    eth_tx_n: out std_logic_vector(N_MGT-1 downto 0);
+    eth_tx_dis: out std_logic_vector(N_MGT-1 downto 0);
+    
+    
 
-    eth0_rx_p: in std_logic;
-    eth0_rx_n: in std_logic;
-    eth0_tx_p: out std_logic;
-    eth0_tx_n: out std_logic;
-    eth0_tx_dis: out std_logic;
-    
+     
     --debugging signals
+    out_buff_trig: out std_logic ;
+    out_buff_clk: out std_logic ;
+    out_buff_data: out std_logic_vector (63 downto 0);
     
-    gth0_debut: out std_logic 
+    --gth0_debut: out std_logic ;
     --time_stamp_debug: out std_logic_vector(63 downto 0);
     --syclk_62p5: out std_logic;
     --ep_rx_tmg_debug: out std_logic;
     --mmcm0_locked: out std_logic;
     --mmcm1_locked: out std_logic;
     --mmcm1_62p5_ouput: out std_logic;
-    --ep_status: out std_logic_vector (3 downto 0);
-     --ep_resets: out std_logic;
-     --sys_rest: out std_logic;
+    FORCE_TRIG: IN std_logic ;
+    DIN_DEBUG: out std_logic_vector (13 downto 0) ;
+     VALID_DEBUG: out std_logic;
+     LAST_DEBUG: out std_logic;
+     Trigered_debug: out std_logic 
     --ep_mmcm1_reset: out std_logic
    
-    
+     
     
   
     
@@ -298,7 +363,7 @@ port(
   );
 end DAPHNE3;
 
-architecture DAPHNE3_arch of DAPHNE3 is
+architecture DAPHNE3_arch of DAPHNE3 is 
 
 -- There are 9 AXI-LITE interfaces in this design:
 --
@@ -329,6 +394,7 @@ port(
     clock: in std_logic;
     dout: out array_5x9x16_type;
     trig: out std_logic;
+    trig_IN: IN std_logic ;
     S_AXI_ACLK: in std_logic;
     S_AXI_ARESETN: in std_logic;
     S_AXI_AWADDR: in std_logic_vector(31 downto 0);
@@ -530,7 +596,7 @@ port(
     mux_en          : out std_logic_vector(1 downto 0);
     mux_a           : out std_logic_vector(1 downto 0);
     stat_led        : out std_logic_vector(5 downto 0);
-    version         : in std_logic_vector(27 downto 0);
+    version         : in std_logic_vector(3 downto 0);
     core_chan_enable: out std_logic_vector(39 downto 0);
 	S_AXI_ACLK	    : in std_logic;
 	S_AXI_ARESETN	: in std_logic;
@@ -556,58 +622,7 @@ port(
   );
 end component;
 
--- 40 self-triggered senders + 10G Ethernet sender
 
-component core
-generic( 
-    link_id: std_logic_vector(5 downto 0) := "000000";
-    slot_id: std_logic_vector(3 downto 0) := "0010";
-    crate_id: std_logic_vector(9 downto 0) := "0000000011";
-    detector_id: std_logic_vector(5 downto 0) := "000010";
-    version_id: std_logic_vector(5 downto 0) := "000011";
-    threshold: std_logic_vector(13 downto 0) := "10000000000000";
-    runlength: integer := 256;
-    ext_mac_addr_0: std_logic_vector(47 downto 0) := X"DEADBEEFCAFE";
-    ext_ip_addr_0: std_logic_vector(31 downto 0) := X"C0A80064";
-    ext_port_addr_0: std_logic_vector(15 downto 0) := X"1234"
-);
-port(
-    clock: in std_logic;
-    reset: in std_logic;
-    timestamp: in std_logic_vector(63 downto 0);
-    din: in array_5x8x14_type;
-    chan_enable: std_logic_vector(39 downto 0);
-    S_AXI_ACLK: in std_logic;
-    S_AXI_ARESETN: in std_logic;
-    S_AXI_AWADDR: in std_logic_vector(31 downto 0);
-    S_AXI_AWPROT: in std_logic_vector(2 downto 0);
-    S_AXI_AWVALID: in std_logic;
-    S_AXI_AWREADY: out std_logic;
-    S_AXI_WDATA: in std_logic_vector(31 downto 0);
-    S_AXI_WSTRB: in std_logic_vector(3 downto 0);
-    S_AXI_WVALID: in std_logic;
-    S_AXI_WREADY: out std_logic;
-    S_AXI_BRESP: out std_logic_vector(1 downto 0);
-    S_AXI_BVALID: out std_logic;
-    S_AXI_BREADY: in std_logic;
-    S_AXI_ARADDR: in std_logic_vector(31 downto 0);
-    S_AXI_ARPROT: in std_logic_vector(2 downto 0);
-    S_AXI_ARVALID: in std_logic;
-    S_AXI_ARREADY: out std_logic;
-    S_AXI_RDATA: out std_logic_vector(31 downto 0);
-    S_AXI_RRESP: out std_logic_vector(1 downto 0);
-    S_AXI_RVALID: out std_logic;
-    S_AXI_RREADY: in std_logic;
-    eth_clk_p: in std_logic;
-    eth_clk_n: in std_logic; 
-    --eth_clk: in std_logic;
-    eth0_rx_p: in std_logic;
-    eth0_rx_n: in std_logic;
-    eth0_tx_p: out std_logic;
-    eth0_tx_n: out std_logic;
-    eth0_tx_dis: out std_logic
-);
-end component;
 
 signal afe_p_array, afe_n_array: array_5x9_type;
 signal din_full_array: array_5x9x16_type;
@@ -744,7 +759,7 @@ signal STUFF_AXI_RRESP:   std_logic_vector(1 downto 0);
 signal STUFF_AXI_RVALID:  std_logic;
 signal STUFF_AXI_RREADY:  std_logic;
 
-signal CORE_AXI_AWADDR:  std_logic_vector(31 downto 0);
+signal CORE_AXI_AWADDR:  std_logic_vector(15 downto 0);
 signal CORE_AXI_AWPROT:  std_logic_vector(2 downto 0);
 signal CORE_AXI_AWVALID: std_logic;
 signal CORE_AXI_AWREADY: std_logic;
@@ -755,7 +770,7 @@ signal CORE_AXI_WREADY:  std_logic;
 signal CORE_AXI_BRESP:   std_logic_vector(1 downto 0);
 signal CORE_AXI_BVALID:  std_logic;
 signal CORE_AXI_BREADY:  std_logic;
-signal CORE_AXI_ARADDR:  std_logic_vector(31 downto 0);
+signal CORE_AXI_ARADDR:  std_logic_vector(15 downto 0);
 signal CORE_AXI_ARPROT:  std_logic_vector(2 downto 0);
 signal CORE_AXI_ARVALID: std_logic;
 signal CORE_AXI_ARREADY: std_logic;
@@ -775,21 +790,57 @@ signal ep_stat_debug: std_logic_vector (3 downto 0);
 signal mmcm1_reset_debug: std_logic ;
 signal ep_reset_debug: std_logic ;
 signal eth0_tx_dis_debug: std_logic ;
-signal eth0_10g_debug:std_logic  ;
+--signal eth0_10g_debug:std_logic  ;
+    --output_spybuff-----
+signal out_buff_data_reg:  array_8x64_type;
+signal out_buff_trig_reg:  std_logic ;
+signal valid_debug_reg: std_logic_vector(7 downto 0) ;
+signal  last_debug_reg :  std_logic_vector(7 downto 0) ; 
+signal din_debug_reg: std_logic_vector (13 downto 0);
+signal trigered_debug_reg: std_logic ;
+
+signal input_mux:array_8x4x14_type;
+signal input_mux_data: array_40x14_type;
+signal channel_id:array_8x4x8_type;
+signal stream_core_dout:array_8x64_type;
+signal stream_core_valid: std_logic_vector(7 downto 0);
+signal stream_core_last: std_logic_vector(7 downto 0);
+
+-- input_mux_AXI_REC
+
+signal AXI_IN:AXILITE_INREC;
+signal AXI_OUT:AXILITE_OUTREC;
+
+
+
+signal AXI_IN_OUT_BUFF:AXILITE_INREC;
+signal AXI_OUT_OUT_BUFF:AXILITE_OUTREC;
+
+-- Don't know where to define these yet
+
+
+signal       ext_mac_addr_0  :  std_logic_vector(47 downto 0);
+ signal       ext_ip_addr_0   :  std_logic_vector(31 downto 0);
+signal        ext_port_addr_0 :  std_logic_vector(15 downto 0);
+        
+signal        ext_mac_addr_1  :  std_logic_vector(47 downto 0);
+signal        ext_ip_addr_1   :  std_logic_vector(31 downto 0);
+signal        ext_port_addr_1 :  std_logic_vector(15 downto 0);
+        
+signal        ext_mac_addr_2  :  std_logic_vector(47 downto 0);
+signal        ext_ip_addr_2   :  std_logic_vector(31 downto 0);
+ signal       ext_port_addr_2 :  std_logic_vector(15 downto 0);
+        
+signal        ext_mac_addr_3  :  std_logic_vector(47 downto 0);
+ signal       ext_ip_addr_3   :  std_logic_vector(31 downto 0);
+signal        ext_port_addr_3 :  std_logic_vector(15 downto 0) ;
+
 begin
 
 
-eth0_tx_p <= eth0_p_buff;
-eth0_tx_n <= eth0_n_buff;
 
+din_debug_reg <=  din_array(1)(0);
 
-  -- IBUFDS_inst : IBUFDS
-  -- port map (
-    --  O => eth0_10g_debug,   -- 1-bit output: Buffer output
-    --  I => eth0_p_buff,   -- 1-bit input: Diff_p buffer input (connect directly to top-level port)
-    --  IB => eth0_n_buff  -- 1-bit input: Diff_n buffer input (connect directly to top-level port)
- --  );
-     
      
 
    
@@ -983,8 +1034,59 @@ SPI_DAC_S_AXI_RRESP  <= DAC_AXI_RRESP ;
  CORE_AXI_RREADY <=  TRIRG_S_AXI_RREADY;
 
 
-  
+     -- threshould axi Input mappings
+    AXI_IN.ACLK     <= MUX_S_AXI_ACLK;
+    AXI_IN.ARESETN  <= MUX_S_AXI_ARESETN;
+    AXI_IN.AWADDR   <= MUX_S_AXI_AWADDR;
+    AXI_IN.AWPROT   <= MUX_S_AXI_AWPROT;
+    AXI_IN.AWVALID  <= MUX_S_AXI_AWVALID;
+    AXI_IN.WDATA    <= MUX_S_AXI_WDATA;
+    AXI_IN.WSTRB    <= MUX_S_AXI_WSTRB;
+    AXI_IN.WVALID   <= MUX_S_AXI_WVALID;
+    AXI_IN.BREADY   <= MUX_S_AXI_BREADY;
+    AXI_IN.ARADDR   <= MUX_S_AXI_ARADDR;
+    AXI_IN.ARPROT   <= MUX_S_AXI_ARPROT;
+    AXI_IN.ARVALID  <= MUX_S_AXI_ARVALID;
+    AXI_IN.RREADY   <= MUX_S_AXI_RREADY;
 
+    --  threshould axi Output mappings
+    MUX_S_AXI_AWREADY <= AXI_OUT.AWREADY;
+    MUX_S_AXI_WREADY  <= AXI_OUT.WREADY;
+    MUX_S_AXI_BRESP   <= AXI_OUT.BRESP;
+    MUX_S_AXI_BVALID  <= AXI_OUT.BVALID;
+    MUX_S_AXI_ARREADY <= AXI_OUT.ARREADY;
+    MUX_S_AXI_RDATA   <= AXI_OUT.RDATA;
+    MUX_S_AXI_RRESP   <= AXI_OUT.RRESP;
+    MUX_S_AXI_RVALID  <= AXI_OUT.RVALID;  
+
+
+-- OUTBUFF
+
+
+     
+    AXI_IN_OUT_BUFF.ACLK     <= OUTBUFF_S_AXI_ACLK;
+    AXI_IN_OUT_BUFF.ARESETN  <= OUTBUFF_S_AXI_ARESETN;
+    AXI_IN_OUT_BUFF.AWADDR   <= OUTBUFF_S_AXI_AWADDR;
+    AXI_IN_OUT_BUFF.AWPROT   <= OUTBUFF_S_AXI_AWPROT;
+    AXI_IN_OUT_BUFF.AWVALID  <= OUTBUFF_S_AXI_AWVALID;
+    AXI_IN_OUT_BUFF.WDATA    <= OUTBUFF_S_AXI_WDATA;
+    AXI_IN_OUT_BUFF.WSTRB    <= OUTBUFF_S_AXI_WSTRB;
+    AXI_IN_OUT_BUFF.WVALID   <= OUTBUFF_S_AXI_WVALID;
+    AXI_IN_OUT_BUFF.BREADY   <= OUTBUFF_S_AXI_BREADY;
+    AXI_IN_OUT_BUFF.ARADDR   <= OUTBUFF_S_AXI_ARADDR;
+    AXI_IN_OUT_BUFF.ARPROT   <= OUTBUFF_S_AXI_ARPROT;
+    AXI_IN_OUT_BUFF.ARVALID  <= OUTBUFF_S_AXI_ARVALID;
+    AXI_IN_OUT_BUFF.RREADY   <= OUTBUFF_S_AXI_RREADY;
+
+  
+    OUTBUFF_S_AXI_AWREADY <= AXI_OUT_OUT_BUFF.AWREADY;
+    OUTBUFF_S_AXI_WREADY  <= AXI_OUT_OUT_BUFF.WREADY;
+    OUTBUFF_S_AXI_BRESP   <= AXI_OUT_OUT_BUFF.BRESP;
+    OUTBUFF_S_AXI_BVALID  <= AXI_OUT_OUT_BUFF.BVALID;
+    OUTBUFF_S_AXI_ARREADY <= AXI_OUT_OUT_BUFF.ARREADY;
+    OUTBUFF_S_AXI_RDATA   <= AXI_OUT_OUT_BUFF.RDATA;
+    OUTBUFF_S_AXI_RRESP   <= AXI_OUT_OUT_BUFF.RRESP;
+    OUTBUFF_S_AXI_RVALID  <= AXI_OUT_OUT_BUFF.RVALID;  
 
 -- front end deskew and alignment
 
@@ -1000,6 +1102,7 @@ port map(
     clk500          => clk500,
     dout            => din_full_array,
     trig            => trig,
+    trig_IN         => trig_IN,
 	S_AXI_ACLK	    => FRONT_END_S_AXI_ACLK,
 	S_AXI_ARESETN	=> FRONT_END_S_AXI_ARESETN,
 	S_AXI_AWADDR	=> FE_AXI_AWADDR,
@@ -1028,7 +1131,7 @@ port map(
 spybuffers_inst: spybuffers
 port map(
     clock           => clock,
-    trig            => trig_IN,
+    trig            => trig,
     din             => din_full_array,
     timestamp       => timestamp,
 	S_AXI_ACLK	    => SPY_BUF_S_S_AXI_ACLK,
@@ -1224,21 +1327,55 @@ gena_din: for a in 4 downto 0 generate
 genc_din: for c in 7 downto 0 generate
 
     din_array(a)(c)(13 downto 0) <= din_full_array(a)(c)(13 downto 0);
+    input_mux_data(a*8 + c) <= din_array(a)(c);
 
 end generate genc_din;
 end generate gena_din;
 
--- core logic is 40 self-trig senders + 10G Ethernet sender
 
-core_inst: core
-port map(
 
-    clock => clock,
-    reset => '0',
-    timestamp => timestamp,
-    din => din_array,
-    chan_enable => core_chan_enable,
+-- input mux
 
+
+input_mux_inst: entity work.stream_input_mux
+    port map (
+    clock =>  clock,
+    din  =>  input_mux_data,
+    dout =>  input_mux,
+    muxctrl =>  channel_id,
+    AXI_IN =>  AXI_IN,
+    AXI_OUT => AXI_OUT 
+    
+    
+    );
+
+
+core_inst: entity work.stream_core
+
+port map (
+
+    clock 	=>  clock,-- 62.5MHz master clock
+    areset	=>   '0',
+    ts 	=>  timestamp,-- timestamp
+    
+    version => version,
+
+    din => input_mux ,
+    channel_id => channel_id,  
+    dout =>  stream_core_dout,
+    valid =>  stream_core_valid,
+    last =>  stream_core_last
+
+
+);
+
+
+
+
+
+hermes_module_inst: entity work.daphne_streaming_top
+port map
+    (
     S_AXI_ACLK	    => TRIRG_S_AXI_ACLK,
 	S_AXI_ARESETN	=> TRIRG_S_AXI_ARESETN,
 	S_AXI_AWADDR	=> CORE_AXI_AWADDR,
@@ -1260,29 +1397,109 @@ port map(
 	S_AXI_RRESP	    => CORE_AXI_RRESP,
 	S_AXI_RVALID	=> CORE_AXI_RVALID,
 	S_AXI_RREADY	=> CORE_AXI_RREADY,
-    --eth_clk => eth_clk,
-    eth_clk_p => eth_clk_p, 
-    eth_clk_n => eth_clk_n,
-    eth0_rx_p => eth0_rx_p,
-    eth0_rx_n => eth0_rx_n,
-    eth0_tx_p => eth0_p_buff,
-    eth0_tx_n => eth0_n_buff,
-    eth0_tx_dis => eth0_tx_dis
+        
+        eth_rx_p =>  eth_rx_p, -- Ethernet rx from SFP
+        eth_rx_n => eth_rx_n ,
+        eth_tx_p =>  eth_tx_p, -- Ethernet tx to SFP
+        eth_tx_n => eth_tx_n ,
+        eth_tx_dis =>  eth_tx_dis, -- SFP tx_disable
+    
+        eth_clk_p => eth_clk_p,   -- Transceiver refclk
+        eth_clk_n =>  eth_clk_n,
+        
+        dune_base_clk  => clock, -- DUNE base clock
+        dune_base_rst  =>  '0',   -- DUNE base clock sync reset
+
+        data_clk =>  clock,
+        data_clk_rst => '0', 
+        
+        d0         => stream_core_dout(0),
+        d0_valid   =>  stream_core_valid(0),
+        d0_last    =>  stream_core_last(0),
+
+        d1         => stream_core_dout(1),
+        d1_valid   =>  stream_core_valid(1),
+        d1_last    =>  stream_core_last(1),
+
+        d2         => stream_core_dout(2),
+        d2_valid   =>  stream_core_valid(2),
+        d2_last    =>  stream_core_last(2),
+
+        d3         => stream_core_dout(3),
+        d3_valid   =>  stream_core_valid(3),
+        d3_last    =>  stream_core_last(3),
+
+        d4         => stream_core_dout(4),
+        d4_valid   =>  stream_core_valid(4),
+        d4_last    =>  stream_core_last(4),
+
+        d5         => stream_core_dout(5),
+        d5_valid   =>  stream_core_valid(5),
+        d5_last    =>  stream_core_last(5),
+
+        d6         => stream_core_dout(6),
+        d6_valid   =>  stream_core_valid(6),
+        d6_last    =>  stream_core_last(6),
+
+        d7         => stream_core_dout(7),
+        d7_valid   =>  stream_core_valid(7),
+        d7_last    =>  stream_core_last(7),
+
+        ts  => timestamp,
+        
+        ext_mac_addr_0   =>  ext_mac_addr_0,
+        ext_ip_addr_0    =>   ext_ip_addr_0,
+        ext_port_addr_0 =>  ext_port_addr_0,
+         
+        ext_mac_addr_1   => ext_mac_addr_1,
+        ext_ip_addr_1    =>  ext_ip_addr_1,
+        ext_port_addr_1  =>  ext_port_addr_1,
+        
+        ext_mac_addr_2   =>  ext_mac_addr_2,
+        ext_ip_addr_2    =>  ext_ip_addr_2,
+        ext_port_addr_2  =>  ext_port_addr_2,
+        
+        ext_mac_addr_3   =>  ext_mac_addr_3,
+        ext_ip_addr_3   =>  ext_ip_addr_3,
+        ext_port_addr_3  =>  ext_port_addr_3
+    
+    
+    
+    
+    
+    );
+
+
+out_buff_data_reg <=  stream_core_dout;
+valid_debug_reg <= stream_core_valid;
+last_debug_reg <= stream_core_last;
+ 
+outbuff_inst: entity work.outspybuff
+
+port map(
+
+	    clock =>  clock,
+	    
+	    din =>  out_buff_data_reg, 
+	    Valid =>  valid_debug_reg,
+	    last =>  last_debug_reg,
+	    AXI_IN =>  AXI_IN_OUT_BUFF,
+	    AXI_OUT =>  AXI_OUT_OUT_BUFF
+
+
 );
 
-
-    --time_stamp_debug <= timestamp;
-    --syclk_62p5 <= clk_62p5_debug;
-   -- ep_rx_tmg_debug <= ep_rx_debug;
-    --mmcm0_locked <= ep_mmcm0_locked ;
-    --mmcm1_locked <= ep_mmcm1_locked;
-   -- ep_status <= ep_stat_debug;
-   -- ep_resets <= ep_reset_debug;
-   -- sys_rest <= TRIRG_S_AXI_ARESETN;
-   -- ep_mmcm1_reset <= mmcm1_reset_debug;
-    gth0_debut <= eth0_10g_debug;
-
-
+    
+     --debugging signals
+    out_buff_trig <= trig_IN;
+    out_buff_clk  <= clock;
+    out_buff_data <= out_buff_data_reg(0);
+    
+    DIN_DEBUG <= input_mux_data(0);
+     VALID_DEBUG <= valid_debug_reg(0);
+     LAST_DEBUG <= last_debug_reg(0);
+         
+    
 -- TO DO: add Xilinx IP block: ZYNQ_PS
 -- this IP block requires parameters that must be set by the TCL build script
 
