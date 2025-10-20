@@ -234,7 +234,7 @@ set xciDAQFiles_aux [get_files_recursive $rtlDAQDir "*.xci"]
 set xciDAQFiles [ignore_files $xciDAQFiles_aux "xxv_ethernet_0_gt.xci"]
 
 set vhdlFiles_aux [get_files_recursive $rtlDir "*.vhd"]
-set vhdlFiles [ignore_files $vhdlFiles_aux {"daphne3.vhd" "auto_afe.vhd" "auto_fsm.vhd" "i2cm.vhd" "spim_cm.vhd" "DAQ_CLOCKS.vhd" "stream_input_mux.vhd" "stream_top_wrapper.vhd" "stream8.vhd"}]
+set vhdlFiles [ignore_files $vhdlFiles_aux {"daphne3.vhd" "auto_afe.vhd" "auto_fsm.vhd" "i2cm.vhd" "spim_cm.vhd" "DAQ_CLOCKS.vhd" "stream_top_wrapper.vhd" "stream8.vhd"}]
 set verilogFiles [get_files_recursive $rtlDir "*.v"]
 
 set tbFilesVhdl [get_files_recursive $tbDir "*.vhd"]
