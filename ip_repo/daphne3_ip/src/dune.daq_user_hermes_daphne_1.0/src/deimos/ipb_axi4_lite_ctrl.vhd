@@ -14,7 +14,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library ipbus;
-use work.ipbus.ipbus.all;
+use work.ipbus.all;
 use work.ipbus_trans_decl.all;
 use work.ipbus_axi4lite_decl.all;
 
@@ -33,7 +33,7 @@ entity ipb_axi4_lite_ctrl is
         aresetn : in std_logic;
         axi_in : in  ipb_axi4lite_mosi;
         axi_out : out ipb_axi4lite_miso;
-        ipb_clk : inout std_logic;  ----jacques
+        ipb_clk : out std_logic;
         ipb_rst : out std_logic;
         ipb_in  : in ipb_rbus;
         ipb_out : out ipb_wbus;
@@ -46,51 +46,27 @@ end ipb_axi4_lite_ctrl;
 architecture rtl of ipb_axi4_lite_ctrl is
 
 
-
-component transactor is
-	port(
-		clk: in std_logic; -- IPbus clock
-		rst: in std_logic; -- Sync reset
-		ipb_out: out ipb_wbus; -- IPbus bus signals
-		ipb_in: in ipb_rbus;
-		ipb_req: out std_logic; -- Bus arbitrator signals
-		ipb_grant: in std_logic;
-		trans_in: in ipbus_trans_in; -- Interface to packet buffers
-		trans_out: out ipbus_trans_out;
-		cfg_vector_in: in std_logic_vector(127 downto 0);
-		cfg_vector_out: out std_logic_vector(127 downto 0)
-	);
-		
-end component;
-
-
-
-
     signal rst_ipb_ctrl : std_logic;
     signal ipb_pkt_done : std_logic;
     signal trans_in     : ipbus_trans_in;
     signal trans_out    : ipbus_trans_out;
-   signal aresetn_signal: std_logic ;
 
 begin
 
-ipb_clk <= aclk;
-aresetn_signal <= not aresetn;   ---jacques
-                                                             --- this need fixing
   --  DCM clock generation for internal bus, ethernet
     ipb_rsts : entity work.ipb_rsts
         port map(
             clki_fr       => aclk,
-            rsti_fr       => aresetn_signal ,  --jacques
+            rsti_fr       => not aresetn,
             clko_ipb      => ipb_clk,
             nuke          => nuke,
             soft_rst      => soft_rst,
             rsto_ipb      => ipb_rst,
             rsto_ipb_ctrl => rst_ipb_ctrl
         );
-    
+    ipb_clk <= aclk;
 
-    ipbus_transport_axil :entity work.ipbus_transport_axi4_lite_if
+    ipbus_transport_axil : entity work.ipbus_transport_axi4_lite_if
         generic map (
             BUFWIDTH => BUFWIDTH,
             ADDRWIDTH => ADDRWIDTH
@@ -109,7 +85,7 @@ aresetn_signal <= not aresetn;   ---jacques
             ipb_trans_tx => trans_out
         );
 
-    ipbus_transactor_axil : transactor
+    ipbus_transactor_axil : entity work.transactor
         port map(
             clk            => ipb_clk,
             rst            => rst_ipb_ctrl,

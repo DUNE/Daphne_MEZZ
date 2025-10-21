@@ -90,69 +90,6 @@ end ipbus_transport_multibuffer_if;
 
 architecture rtl of ipbus_transport_multibuffer_if is
 
-
-component  ipbus_transport_multibuffer_rx_dpram is
-  generic (
-  	-- corresponds to 32b data
-    ADDRWIDTH : natural
-  );
-  port (
-  	clka : in std_logic;
-    wea : in std_logic;
-    addra : in std_logic_vector(ADDRWIDTH - 1 downto 0);
-    dia : in std_logic_vector(31 downto 0);
-
-  	clkb : in std_logic;
-  	addrb : in std_logic_vector(ADDRWIDTH - 1 downto 0);
-  	dob : out std_logic_vector(31 downto 0)
-  );
-end  component;
-
-component ipbus_transport_multibuffer_tx_dpram is
-  generic (
-  	-- corresponds to 32b data
-  	ADDRWIDTH : natural
-  );
-  port (
-  	clka : in std_logic;
-  	wea : in std_logic;
-  	addra : in std_logic_vector(ADDRWIDTH - 1 downto 0);
-  	dia : in std_logic_vector(31 downto 0);
-
-  	clkb : in std_logic;
-  	addrb : in std_logic_vector(ADDRWIDTH - 1 downto 0);
-  	dob : out std_logic_vector(31 downto 0)
-  );
-end  component;
-
-component ipbus_transport_multibuffer_cdc is
-  generic (
-    -- Number of buffers
-    N_BUFFERS: natural
-  );
-  port (
-    ipb_clk: in std_logic;
-    master_clk: in std_logic;
-
-    -- IPbus reset
-    rst_ipbclk : in std_logic;
-    -- IPbus reset in 'master' clock domain
-    rst_mstclk : out std_logic;
-
-    -- IPbus transactor 'pkt_done' signal
-    pkt_done_ipbclk : in std_logic;
-    -- IPbus transactor 'pkt_done' in 'master' clock domain
-    pkt_done_mstclk : out std_logic;
-
-    -- 'Buffer filled' signal in 'master' clock domain
-    buf_filled_mstclk : in std_logic_vector(N_BUFFERS - 1 downto 0);
-    -- 'Buffer filled' signal in IPbus clock domain
-    buf_filled_ipbclk : out std_logic_vector(N_BUFFERS - 1 downto 0)
-  );
-
-end component;
-
-
   signal wr_buf_idx_i : unsigned(BUFWIDTH - 1 downto 0) := (Others => '0');
   signal buf_idx_transactor : unsigned(BUFWIDTH - 1 downto 0) := (Others => '0');
 
@@ -183,7 +120,7 @@ begin
 
   rx_ram_addra <= std_logic_vector(wr_buf_idx_i) & wr_addr;
   rx_ram_addrb <= std_logic_vector(buf_idx_transactor) & trans_out.raddr(ADDRWIDTH - 1 downto 0);
-  rx_ram :ipbus_transport_multibuffer_rx_dpram
+  rx_ram : entity work.ipbus_transport_multibuffer_rx_dpram
     generic map (
       ADDRWIDTH => ADDRWIDTH + BUFWIDTH
     )
@@ -244,7 +181,7 @@ begin
 
   tx_ram_addra <= std_logic_vector(buf_idx_transactor) & trans_out.waddr(ADDRWIDTH - 1 downto 0);
   tx_ram_addrb <= rd_idx & rd_addr;
-  tx_ram : ipbus_transport_multibuffer_tx_dpram
+  tx_ram : entity work.ipbus_transport_multibuffer_tx_dpram
     generic map (
       ADDRWIDTH => ADDRWIDTH + BUFWIDTH
     )
@@ -341,7 +278,7 @@ begin
   --   CLOCK DOMAIN CROSSINGS   --
   --------------------------------
 
-  cdc :ipbus_transport_multibuffer_cdc
+  cdc : entity work.ipbus_transport_multibuffer_cdc
     generic map (
       N_BUFFERS => 2**BUFWIDTH
     )

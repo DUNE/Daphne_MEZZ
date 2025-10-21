@@ -53,65 +53,6 @@ entity tx_udp_handler is
 end entity tx_udp_handler;
 
 architecture behavioural of tx_udp_handler is
-
-
-component  axi4s_fifo is
-     generic (
-          g_fpga_vendor        : string        := "xilinx";      --For xpm doesnt affect anything
-          g_fpga_family        : string        := "all";         --For xpm doesnt affect anything
-          g_implementation     : string        := "distributed"; --For xpm doesnt affect anything
-          g_dual_clock         : boolean       := true;
-          g_wr_adr_width       : integer       := 5;
-          g_prog_full_val      : positive      := 20;
-          g_sanity_check       : boolean       := true;  --TODO not implemented yet
-          g_in_endianess_swap  : boolean       := false; --TODO not implemented yet
-          g_out_endianess_swap : boolean       := false; --TODO not implemented yet
-          g_axi4s_descr        : t_axi4s_descr := (tdata_nof_bytes => 4,
-          tid_width                                                => 32,
-          tuser_width                                              => 32,
-          has_tlast                                                => 1,
-          has_tkeep                                                => 1,
-          has_tid                                                  => 0,
-          has_tuser                                                => 0);
-          g_in_tdata_nof_bytes       : integer := 4;
-          g_out_tdata_nof_bytes      : integer := 4;
-          g_bram_partition_width     : integer := 0;    --TODO not implemented yet
-          g_hold_last_read           : boolean := true; --TODO not implemented yet
-          g_full_packet              : boolean := false;
-          g_packet_fifo_wr_adr_width : integer := 4 --TODO not implemented yet
-     );
-     port (
-          s_axi_clk    : in std_logic;
-          s_axi_rst_n  : in std_logic;
-          m_axi_clk    : in std_logic;
-          m_axi_rst_n  : in std_logic;
-          axi4s_s_mosi : in t_axi4s_mosi;
-          axi4s_s_miso : out t_axi4s_miso;
-          axi4s_m_mosi : out t_axi4s_mosi;
-          axi4s_m_miso : in t_axi4s_miso
-     );
-end component;
-
-
-
-component udp_ip_pkt_len is
-    generic(
-        G_UDP_CORE_BYTES    : integer := 8
-    );
-    port(
-        udp_core_clk        : in  std_logic;                        --! UDP Core "core" Clock
-        udp_core_rst_s_n    : in  std_logic;                        --! UDP Core "core" Synchronous Active-High Reset
-        en                  : in  std_logic;                        --! Enable Signal
-        fxd_pkt_sze         : in  std_logic;                        --! Use Fixed Packet Size
-        keep                : in  std_logic_vector(G_UDP_CORE_BYTES - 1 downto 0);
-        last                : in  std_logic;                        --! End-Of-Packet Flag
-        ip_length_base      : in  std_logic_vector(15 downto 0);    --! Base Length of Ethernet IPv4 Frame (i.e. Header Length)
-        udp_length_base     : in  std_logic_vector(15 downto 0);    --! Base Length of UDP Packet (i.e. UDP Header Length)
-        ip_length           : out std_logic_vector(15 downto 0);    --! Calculated IP Frame Length
-        udp_length          : out std_logic_vector(15 downto 0);    --! Calculated UDP Packet Length
-        length_strb         : out std_logic                         --! IPv4 and UDP Lengths Valid Strobe
-    );
-end component  ;
     -- Calculate the FIFO Address Width Based on G_LL_BYTES and C_TOTAL_FIFO_BYTES:
     constant C_TOTAL_FIFO_BYTES : integer := C_MAX_PAYLOAD_SIZE + (20 * G_UDP_CORE_BYTES);
     constant C_FIFO_WORDS       : integer := C_TOTAL_FIFO_BYTES / G_UDP_CORE_BYTES;
@@ -160,7 +101,7 @@ begin
 
     start_of_frame <= valid_last and udp_s_mosi_int.tvalid;
 
-    udp_fifo_inst :  axi4s_fifo
+    udp_fifo_inst : entity work.axi4s_fifo
         generic map(
             g_fpga_vendor         => G_FPGA_VENDOR,
             g_fpga_family         => G_FPGA_FAMILY,
@@ -185,7 +126,7 @@ begin
         );
 
     -- Calculates IP & UDP length Fields for UDP Packets
-    inst_udp_ip_pkt_len :udp_ip_pkt_len
+    inst_udp_ip_pkt_len : entity work.udp_ip_pkt_len
         generic map(
             G_UDP_CORE_BYTES => G_UDP_CORE_BYTES
         )

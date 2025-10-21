@@ -25,47 +25,6 @@ entity crc32_n_lut_based is
 end entity crc32_n_lut_based;
 
 architecture behavioral of crc32_n_lut_based is
-
-component  crc32_64_bytewise_lut_python is
-    generic(
-        G_NOF_LUTS : integer := 8
-    );
-    port(
-        data_in : in  std_logic_vector(G_NOF_LUTS * 8 - 1 downto 0);
-        crc_out : out std_logic_vector(31 downto 0)
-    );
-end component  ;
-
-component crc32_128_bytewise_lut_python is
-    generic(
-        G_NOF_LUTS : integer := 16
-    );
-    port(
-        data_in : in  std_logic_vector(G_NOF_LUTS * 8 - 1 downto 0);
-        crc_out : out std_logic_vector(31 downto 0)
-    );
-end component  ;
-
-component crc32_256_bytewise_lut_python is
-    generic(
-        G_NOF_LUTS : integer := 32
-    );
-    port(
-        data_in : in  std_logic_vector(G_NOF_LUTS * 8 - 1 downto 0);
-        crc_out : out std_logic_vector(31 downto 0)
-    );
-end component  ;
-
-component crc32_512_bytewise_lut_python is
-    generic(
-        G_NOF_LUTS : integer := 64
-    );
-    port(
-        data_in : in  std_logic_vector(G_NOF_LUTS * 8 - 1 downto 0);
-        crc_out : out std_logic_vector(31 downto 0)
-    );
-end component  ;
-
     -- Signal Declarations
     signal data_r    : std_logic_vector(LL_WIDTH - 1 downto 0) := (others => '0');
     signal width_r   : std_logic_vector(5 downto 0)            := (others => '1');
@@ -81,7 +40,7 @@ end component  ;
 begin
 
     crc_lut_64_based : if (LL_WIDTH = 64) generate
-        crc_lut :  crc32_64_bytewise_lut_python
+        crc_lut : entity work.crc32_64_bytewise_lut_python
             generic map(
                 G_NOF_LUTS => LL_WIDTH / 8
             )
@@ -92,7 +51,7 @@ begin
     end generate crc_lut_64_based;
 
     crc_lut_128_based : if (LL_WIDTH = 128) generate
-        crc_lut : crc32_128_bytewise_lut_python
+        crc_lut : entity work.crc32_128_bytewise_lut_python
             generic map(
                 G_NOF_LUTS => LL_WIDTH / 8
             )
@@ -103,7 +62,7 @@ begin
     end generate crc_lut_128_based;
 
     crc_lut_256_based : if (LL_WIDTH = 256) generate
-        crc_lut : crc32_256_bytewise_lut_python
+        crc_lut : entity work.crc32_256_bytewise_lut_python
             generic map(
                 G_NOF_LUTS => LL_WIDTH / 8
             )
@@ -114,7 +73,7 @@ begin
     end generate crc_lut_256_based;
 
     crc_lut_512_based : if (LL_WIDTH = 512) generate
-        crc_lut :  crc32_512_bytewise_lut_python
+        crc_lut : entity work.crc32_512_bytewise_lut_python
             generic map(
                 G_NOF_LUTS => LL_WIDTH / 8
             )
@@ -205,7 +164,7 @@ begin
                     --127 downto 88
                     data_aligned_v(LL_WIDTH - 1 downto LL_WIDTH - 40) := data_r(39 downto 0);
                     prev_crc_v(LL_WIDTH - 1 - 8 downto LL_WIDTH - 40) := crc_out_r; --503
-                when "000101" =>
+                when "000101" => 
                     --127 downto 80
                     data_aligned_v(LL_WIDTH - 1 downto LL_WIDTH - 48)       := data_r(47 downto 0);
                     prev_crc_v(LL_WIDTH - 1 - (2 * 8) downto LL_WIDTH - 48) := crc_out_r; --495 

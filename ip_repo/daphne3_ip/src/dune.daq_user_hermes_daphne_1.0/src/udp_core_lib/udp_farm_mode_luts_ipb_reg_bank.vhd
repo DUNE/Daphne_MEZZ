@@ -30,56 +30,12 @@ entity udp_farm_mode_luts_ipb_reg_bank is
 end udp_farm_mode_luts_ipb_reg_bank;
 
 architecture rtl of udp_farm_mode_luts_ipb_reg_bank is
-
-
-
-component  ipbus_fabric_sel is
-  generic(
-    NSLV: positive;
-    STROBE_GAP: boolean := false;
-    SEL_WIDTH: natural
-   );
-  port(
-  	sel: in std_logic_vector(SEL_WIDTH - 1 downto 0);
-    ipb_in: in ipb_wbus;
-    ipb_out: out ipb_rbus;
-    ipb_to_slaves: out ipb_wbus_array(NSLV - 1 downto 0);
-    ipb_from_slaves: in ipb_rbus_array(NSLV - 1 downto 0) := (others => IPB_RBUS_NULL)
-   );
-
-end component;
-
-component udp_ipbus_dpram is
-    generic(
-        ADDR_WIDTH     : positive;
-        DATA_WIDTH      : positive := 32;
-        LATENCY         : integer range 1 to 2 := 1;
-        USER_LATENCY    : integer range 1 to 2 := 1
-    );
-    port(
-        clk     : in std_logic;
-        rst     : in std_logic;
-        ipb_in  : in ipb_wbus;
-        ipb_out : out ipb_rbus;
-        
-        q_mask  : in std_logic_vector(DATA_WIDTH-1 downto 0);
-        rclk    : in std_logic;
-        we      : in std_logic := '0';
-        en      : in std_logic := '0';
-        d       : in std_logic_vector(DATA_WIDTH - 1 downto 0) := (others => '0');
-        addr    : in std_logic_vector(ADDR_WIDTH - 1 downto 0);
-        q       : out std_logic_vector(DATA_WIDTH - 1 downto 0)
-    );
-end component;
-
-
-
     signal ipbw: ipb_wbus_array(N_SLAVES - 1 downto 0);
     signal ipbr: ipb_rbus_array(N_SLAVES - 1 downto 0);
 
 begin
     -- ipbus address decode
-    fabric: ipbus_fabric_sel
+    fabric: entity work.ipbus_fabric_sel
     generic map(
         NSLV => N_SLAVES,
         SEL_WIDTH => IPBUS_SEL_WIDTH
@@ -92,7 +48,7 @@ begin
         ipb_from_slaves => ipbr
     );
 
-    lower_mac_addr_lut : udp_ipbus_dpram
+    lower_mac_addr_lut : entity work.udp_ipbus_dpram
         generic map(
             ADDR_WIDTH   => ADDR_WIDTH,
             DATA_WIDTH   => DATA_WIDTH,
@@ -113,7 +69,7 @@ begin
             q           => farm_mode_lut_out.farm_mode_lut_lower_mac_addr_rdat
         );
 
-    upper_mac_addr_lut : udp_ipbus_dpram
+    upper_mac_addr_lut : entity work.udp_ipbus_dpram
         generic map(
             ADDR_WIDTH   => ADDR_WIDTH,
             DATA_WIDTH   => DATA_WIDTH,
@@ -134,7 +90,7 @@ begin
             q           => farm_mode_lut_out.farm_mode_lut_upper_mac_addr_rdat
         );
 
-    ip_addr_lut :udp_ipbus_dpram
+    ip_addr_lut : entity work.udp_ipbus_dpram
         generic map(
             ADDR_WIDTH   => ADDR_WIDTH,
             DATA_WIDTH   => DATA_WIDTH,
@@ -155,7 +111,7 @@ begin
             q           => farm_mode_lut_out.farm_mode_lut_ip_addr_rdat
         );
 
-    dst_port_lut : udp_ipbus_dpram
+    dst_port_lut : entity work.udp_ipbus_dpram
         generic map(
             ADDR_WIDTH   => ADDR_WIDTH,
             DATA_WIDTH   => DATA_WIDTH,

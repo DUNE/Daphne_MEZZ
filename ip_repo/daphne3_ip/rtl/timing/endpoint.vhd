@@ -26,8 +26,8 @@ use unisim.vcomponents.all;
 entity endpoint is
 port(
 
-    --sysclk_p, sysclk_n:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
-    sysclk100:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
+    sysclk_p, sysclk_n:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
+    --sysclk100:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
     -- external optical timing SFP link interface
 
     sfp_tmg_los: in std_logic; -- loss of signal
@@ -155,8 +155,8 @@ reset_async <= not S_AXI_ARESETN;
 
 -- if using external LVDS 100MHz sysclk, receive it with IBUFDS.
 
---sysclk_ibufds_inst : IBUFGDS 
---port map(O => sysclk_ibuf, I => sysclk_p, IB => sysclk_n);
+sysclk_ibufds_inst : IBUFDS 
+port map(O => sysclk_ibuf, I => sysclk_p, IB => sysclk_n);
 
 mmcm0_inst: MMCME2_ADV
 generic map(
@@ -197,7 +197,7 @@ port map(
     CLKOUT5             => open,
     CLKOUT6             => open,
     CLKFBIN             => mmcm0_clkfbout_buf,
-    CLKIN1              => sysclk100, -- 100 MHz system clock
+    CLKIN1              => sysclk_ibuf, -- 100 MHz system clock
     CLKIN2              => '0',
     CLKINSEL            => '1', -- high to use CLKIN1
     DADDR               => (others=>'0'),

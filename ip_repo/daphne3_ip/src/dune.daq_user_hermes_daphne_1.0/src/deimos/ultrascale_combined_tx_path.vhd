@@ -26,7 +26,7 @@ use work.tx_mux_decl.all;
 entity ultrascale_combined_tx_path is
     generic(
         N_SRC               : integer := 4;
-        N_MGT               : positive range 1 to 4 := 1;
+        N_MGT               : positive range 1 to 4 := 2;
         IN_BUF_DEPTH        : natural
     );
     port(
@@ -36,8 +36,8 @@ entity ultrascale_combined_tx_path is
         ipb_out             : out ipb_rbus;
 
         ref_clk_156_in      : in std_logic;
-        dune_base_clk	    : in  std_logic; -- From infra
-        dune_rst	    : in  std_logic; -- From infra
+        data_clk	        : in  std_logic; -- From infra
+        data_clk_rst	    : in  std_logic; -- From infra
 
         ts: in std_logic_vector(63 downto 0);  
         samp: in std_logic; 
@@ -54,7 +54,7 @@ entity ultrascale_combined_tx_path is
         phy_ready_array      : in std_logic_vector(N_MGT-1 downto 0);
         rst_156_25_array     : in std_logic_vector(N_MGT-1 downto 0);
  
-        d : in array_of_src_d_arrays(N_MGT-1 downto 0)(N_SRC-1 downto 0);
+        d : in array_of_src_d_arrays(N_MGT-1 downto 0) (N_SRC-1 downto 0);
         
         ext_mac_addr    : in mac_addr_array(N_MGT-1 downto 0);
         ext_ip_addr     : in ip_addr_array(N_MGT-1 downto 0); 
@@ -64,7 +64,7 @@ entity ultrascale_combined_tx_path is
 end entity ultrascale_combined_tx_path;
 
 architecture rtl of ultrascale_combined_tx_path is
-   
+
     type t_axi4s_miso_array is array (N_MGT - 1 downto 0) of t_axi4s_miso;
     type t_axi4s_mosi_array is array (N_MGT - 1 downto 0) of t_axi4s_mosi;
     
@@ -174,7 +174,7 @@ begin
      csr_udp_core: entity work.ipbus_ctrlreg_v
 		generic map(
 			N_CTRL => 1,
-                        N_STAT => 1
+            N_STAT => 1
 		)
 		port map(
 			clk => ipb_clk,
@@ -228,7 +228,7 @@ src_gen: for i in 0 to N_MGT-1 generate
         G_INC_ETH              => false,          --! Generate Logic To Transmit Externally Provided Ethernet Payloads
         G_INC_IPV4             => false           --! Generate Logic To Transmit Externally Provided IPV4 Payloads
     )
-    port map(
+    port map( 
         clk     => ipb_clk,
         rst     => ipb_rst,
         ipb_in  => ipbw_quad_udp_core(i), --ipbw(N_SLV_UDP_CORE0+i),
@@ -274,8 +274,8 @@ port map(
     ipb_rst => ipb_rst,
     ipb_in => ipbw_quad_tx_mux(i), --ipbw(N_SLV_TX_MUX0+i),
     ipb_out => ipbr_quad_tx_mux(i), --ipbr(N_SLV_TX_MUX0+i),
-    src_clk => dune_base_clk,
-    src_rst => dune_rst,
+    src_clk => data_clk,
+    src_rst => data_clk_rst,
     ts => ts,
     d => d_array((i*N_SRC)+N_SRC - 1 downto (i*N_SRC)),
     samp => samp,

@@ -82,40 +82,6 @@ end ipbus_transport_ram_if;
 
 architecture rtl of ipbus_transport_ram_if is
 
-component ipbus_transport_multibuffer_if is
-  generic (
-    -- Number of address bits to select RX or TX buffer
-    -- Number of RX and TX buffers is 2 ** INTERNALWIDTH
-    BUFWIDTH: natural;
-
-    -- Number of address bits within each buffer
-    -- Size of each buffer is 2**ADDRWIDTH
-    ADDRWIDTH: natural
-  );
-  port (
-    ram_clk: in std_logic;
-    ipb_clk: in std_logic;
-    rst_ipb: in std_logic;
-    rst_ramclk : out std_logic;
-
-    wr_buf_idx : out std_logic_vector(BUFWIDTH - 1 downto 0);
-    wr_addr : in std_logic_vector(ADDRWIDTH - 1 downto 0);
-    wr_data : in std_logic_vector(31 downto 0);
-    wr_en   : in std_logic;
-    wr_done : in std_logic;
-
-    rd_idx  : in std_logic_vector(BUFWIDTH - 1 downto 0);
-    rd_addr : in std_logic_vector(ADDRWIDTH - 1 downto 0);
-    rd_data : out std_logic_vector(31 downto 0);
-
-    pkt_done : out std_logic;
-
-    trans_out : in ipbus_trans_out;
-    trans_in  : out ipbus_trans_in
-  );
-
-end component ;
-
   signal wr_buf_idx : std_logic_vector(BUFWIDTH - 1 downto 0);
   signal num_filled_rd_buf : std_logic_vector(31 downto 0);
 
@@ -137,7 +103,7 @@ begin
   rd_addr_ram_ctrl <= std_logic_vector(unsigned(rd_addr) - 4);
   pkt_done <= pkt_done_i;
 
-  multibuffer_if : ipbus_transport_multibuffer_if 
+  multibuffer_if : entity work.ipbus_transport_multibuffer_if 
     generic map (
       BUFWIDTH => BUFWIDTH,
       ADDRWIDTH => ADDRWIDTH

@@ -54,44 +54,6 @@ entity tx_pass_in_handler is
 end entity tx_pass_in_handler;
 
 architecture behavioural of tx_pass_in_handler is
-
-component  axi4s_fifo is
-     generic (
-          g_fpga_vendor        : string        := "xilinx";      --For xpm doesnt affect anything
-          g_fpga_family        : string        := "all";         --For xpm doesnt affect anything
-          g_implementation     : string        := "distributed"; --For xpm doesnt affect anything
-          g_dual_clock         : boolean       := true;
-          g_wr_adr_width       : integer       := 5;
-          g_prog_full_val      : positive      := 20;
-          g_sanity_check       : boolean       := true;  --TODO not implemented yet
-          g_in_endianess_swap  : boolean       := false; --TODO not implemented yet
-          g_out_endianess_swap : boolean       := false; --TODO not implemented yet
-          g_axi4s_descr        : t_axi4s_descr := (tdata_nof_bytes => 4,
-          tid_width                                                => 32,
-          tuser_width                                              => 32,
-          has_tlast                                                => 1,
-          has_tkeep                                                => 1,
-          has_tid                                                  => 0,
-          has_tuser                                                => 0);
-          g_in_tdata_nof_bytes       : integer := 4;
-          g_out_tdata_nof_bytes      : integer := 4;
-          g_bram_partition_width     : integer := 0;    --TODO not implemented yet
-          g_hold_last_read           : boolean := true; --TODO not implemented yet
-          g_full_packet              : boolean := false;
-          g_packet_fifo_wr_adr_width : integer := 4 --TODO not implemented yet
-     );
-     port (
-          s_axi_clk    : in std_logic;
-          s_axi_rst_n  : in std_logic;
-          m_axi_clk    : in std_logic;
-          m_axi_rst_n  : in std_logic;
-          axi4s_s_mosi : in t_axi4s_mosi;
-          axi4s_s_miso : out t_axi4s_miso;
-          axi4s_m_mosi : out t_axi4s_mosi;
-          axi4s_m_miso : in t_axi4s_miso
-     );
-end component;
-
     -- Calculate the FIFO Address Width Based on G_LL_BYTES and C_TOTAL_FIFO_BYTES:
     constant C_FIFO_ADDR_WIDTH : integer       := udp_maximum(3, log_2_ceil(G_EXT_FIFO_CAP / (G_UDP_CORE_BYTES * 8)));
     constant C_FIFO_DESC       : t_axi4s_descr := (tdata_nof_bytes => G_UDP_CORE_BYTES,
@@ -116,7 +78,7 @@ end component;
 begin
     axi4s_miso_int.tready <= start_frame or sending_frame;
 
-    ipvr_fifo_inst : axi4s_fifo
+    ipvr_fifo_inst : entity work.axi4s_fifo
         generic map(
             g_fpga_vendor         => G_FPGA_VENDOR,
             g_fpga_family         => G_FPGA_FAMILY,

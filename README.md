@@ -284,9 +284,9 @@ It is strongly recommended to NOT use the Vivado GUI (Project Mode) to build thi
 
 3. Once both the DAPHNE3 IP and the Block Design have been created, the batch file creates a wrapper for the TOP level fo the Block Design, generates all the necessary outputs of each IP (wrappers, constraints, and so on) and then starts the design building process, by running the synthesis, then implementation, and then the bitstream (In a super summarized way of saying it).        
 
-## Does it meet timing?
+## How do I know if it meets timing?
 
-The timing constraints for this design were written after finishing the process, look for the file:
+After finishing the process, look for the file:
 
     src/xilinx/output/post_route_timing_summary.rpt
 
@@ -298,7 +298,7 @@ Output files are usually ZIPPED up and attached to each commit in the comments s
 
 ## What are we missing?
 
-The design was pretty much written for a Windows version, but fully automatic generation of device tree overlay on Linux is available too. Windows does not allow the process to run fully automatic, as the `vivado_batch.tcl` script generates up to the `pl.dts - pl.dtsi` files, the user must run the `dtc` command by either using a Windows Subsystem for Linux installation (safer way), or a Machine that runs Linux as its OS, in order to generate both `pl.dtbo` and `shell.json` files.
+The design was pretty much written for a Windows version, but fully automatic generation of device tree overlay on Linux is available too. Windows does not allow the process to run fully automatic, as the `vivado_batch.tcl` script generates up to the `pl.dts - pl.dtsi` files, the user must run the `dtc` command by either using a Windows Subsystem for Linux installation (safer way) or a Machine that runs Linux as its OS, in order to generate both `pl.dtbo` and `shell.json` files.
 
 - [x] Create Bitstream and Platform Files (`.bit .bin .xsa .dts .dtsi`).
 - [x] Manually generate Device Tree Overlay Files (`.dtbo`) using WSL.

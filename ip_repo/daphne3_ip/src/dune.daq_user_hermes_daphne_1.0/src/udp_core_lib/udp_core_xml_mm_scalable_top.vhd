@@ -111,195 +111,6 @@ entity udp_core_xml_mm_scalable_top is
 end entity udp_core_xml_mm_scalable_top;
 
 architecture struct of udp_core_xml_mm_scalable_top is
-
-
-component  axi4s_fifo is
-     generic (
-          g_fpga_vendor        : string        := "xilinx";      --For xpm doesnt affect anything
-          g_fpga_family        : string        := "all";         --For xpm doesnt affect anything
-          g_implementation     : string        := "distributed"; --For xpm doesnt affect anything
-          g_dual_clock         : boolean       := true;
-          g_wr_adr_width       : integer       := 5;
-          g_prog_full_val      : positive      := 20;
-          g_sanity_check       : boolean       := true;  --TODO not implemented yet
-          g_in_endianess_swap  : boolean       := false; --TODO not implemented yet
-          g_out_endianess_swap : boolean       := false; --TODO not implemented yet
-          g_axi4s_descr        : t_axi4s_descr := (tdata_nof_bytes => 4,
-          tid_width                                                => 32,
-          tuser_width                                              => 32,
-          has_tlast                                                => 1,
-          has_tkeep                                                => 1,
-          has_tid                                                  => 0,
-          has_tuser                                                => 0);
-          g_in_tdata_nof_bytes       : integer := 4;
-          g_out_tdata_nof_bytes      : integer := 4;
-          g_bram_partition_width     : integer := 0;    --TODO not implemented yet
-          g_hold_last_read           : boolean := true; --TODO not implemented yet
-          g_full_packet              : boolean := false;
-          g_packet_fifo_wr_adr_width : integer := 4 --TODO not implemented yet
-     );
-     port (
-          s_axi_clk    : in std_logic;
-          s_axi_rst_n  : in std_logic;
-          m_axi_clk    : in std_logic;
-          m_axi_rst_n  : in std_logic;
-          axi4s_s_mosi : in t_axi4s_mosi;
-          axi4s_s_miso : out t_axi4s_miso;
-          axi4s_m_mosi : out t_axi4s_mosi;
-          axi4s_m_miso : in t_axi4s_miso
-     );
-end component;
-
-
-component rx_path_top is
-    generic(
-        G_FPGA_VENDOR         : string  := "xilinx"; --! Selects the FPGA Vendor for Compilation
-        G_FPGA_FAMILY         : string  := "all"; --! Selects the FPGA Family for Compilation
-        G_FIFO_IMPLEMENTATION : string  := "auto";
-        G_FIFO_TYPE           : string  := "inferred_mem"; --! Selects how to implement the Core's FIFOs
-        G_UDP_CORE_BYTES      : integer := 8; --! Width of Data Bus In Bytes
-        G_RX_IN_FIFO_CAP      : integer := 1024 * 8; --! Capacity in bits Of Input FIFO, will always generate to safe value
-        G_INC_PING            : boolean := true; --! Generate Ping Logic
-        G_INC_ARP             : boolean := true; --! Generate ARP Logic
-        G_INC_ETH             : boolean := false; --! Generate Unsupported Ethernet Type Logic
-        G_INC_IPV4            : boolean := false --! Generate Unsupported Protocol Type Logic
-    );
-    port(
-        -- UDP Rx Clock and Reset Domain
-        rx_core_clk            : in  std_logic; --! Rx Path Main Clock
-        rx_core_rst_n          : in  std_logic; --! Rx Path Synchronous Active-Low Reset
-        -- Rx Data From PHY:
-        rx_in_axi4s_s_aclk     : in  std_logic; --! Rx Clk Out from PHY
-        rx_in_axi4s_s_areset_n : in  std_logic; --! Rx Interface Active Low synchronous reset
-        rx_in_axi4s_s_mosi     : in  t_axi4s_mosi; --! Axi4s Ethernet Data In
-        rx_in_axi4s_s_miso     : out t_axi4s_miso; --! Axi4s Ethernet Backpressure
-        -- Filter Values:
-        filter_mac_dst_addr    : in  std_logic_vector(47 downto 0); --! Filter Destination MAC Address
-        filter_mac_src_addr    : in  std_logic_vector(47 downto 0); --! Filter Source MAC Address
-        filter_ip_dst_addr     : in  std_logic_vector(31 downto 0); --! Filter Destination IP Address
-        filter_ip_src_addr     : in  std_logic_vector(31 downto 0); --! Filter Source IP Address
-        filter_port_dst_addr   : in  std_logic_vector(15 downto 0); --! Filter Destination UDP Port
-        filter_port_src_addr   : in  std_logic_vector(15 downto 0); --! Filter Source UDP Port
-        filter_controls        : in  t_udp_core_settings_filter_control; --! Record Of Filter Controls From MM
-        -- UDP AXI4s Out
-        udp_axi4s_rx_out_mosi  : out t_axi4s_mosi; --! Axi4s Filtered UDP Payload Data Out
-        udp_axi4s_rx_out_miso  : in  t_axi4s_miso; --! Axi4s Filtered UDP Payload Backpressure - Unused
-        -- IPV4 Axi4s Out
-        ipv4_axi4s_m_mosi      : out t_axi4s_mosi; --! Axi4s Unsupported IPv4 Protocol Data
-        ipv4_axi4s_m_miso      : in  t_axi4s_miso; --! Axi4s Unsupported IPv4 Backpressure - Unused
-        -- IPV4 Axi4s Out
-        eth_axi4s_m_mosi       : out t_axi4s_mosi; --! Axi4s Unsupported Ethernet Type Data
-        eth_axi4s_m_miso       : in  t_axi4s_miso; --! Axi4s Unsupported Ethernet Backpressure - Unused
-        -- ARP Axi4s Out
-        arp_axi4s_m_mosi       : out t_axi4s_mosi; --! Axi4s ARP Data To Tx Path
-        arp_axi4s_m_miso       : in  t_axi4s_miso; --! Axi4s ARP Backpressure - Unused
-        -- Ping Axi4s Out
-        ping_axi4s_m_mosi      : out t_axi4s_mosi; --! Axi4s Ping Data To Tx Path-----------------------------jacques-----------------------
-        ping_axi4s_m_miso      : in  t_axi4s_miso; --! Axi4s Ping Backpressure - Unused
-        --Routing Addresses to Allow Ping Replies To Be Formed
-        ping_dst_mac_addr_out  : out std_logic_vector(47 downto 0); --! Ping Dst MAC Address To Tx Path, To Route Replies
-        ping_dst_ip_addr_out   : out std_logic_vector(31 downto 0); --! Ping Dst IP Address To Tx Path, To Route Replies
-        ping_dst_addr_en_out   : out std_logic; --! Signal Ping Addresses Are Valid
-        --Debug Counts
-        udp_count              : out std_logic_vector(31 downto 0); --! UDP Packet Count
-        arp_count              : out std_logic_vector(31 downto 0); --! ARP Packet Count
-        uns_etype_count        : out std_logic_vector(31 downto 0); --! Other Ethernet Type Packet Count
-        ping_count             : out std_logic_vector(31 downto 0); --! Ping Packet Count
-        uns_pro_count          : out std_logic_vector(31 downto 0); --! Other Protocol Packet Count
-        dropped_mac_count      : out std_logic_vector(31 downto 0); --! Dropped MAC Packet Count
-        dropped_ip_count       : out std_logic_vector(31 downto 0); --! Dropped IP Packet Count
-        dropped_port_count     : out std_logic_vector(31 downto 0) --! Dropped Port Packet Count
-    );
-end component  ;
-
-
-component udp_axi4s_pipe is
-    generic(
-        G_STAGES       : integer := 1;      --! Pipeline stages to generate
-        G_BACKPRESSURE : boolean := true    --! Whether downstream tready signals can be ignored
-    );
-    port(
-        axi_clk      : in  std_logic;       --! Clk
-        axi_rst_n    : in  std_logic;       --! Active Low Synchronous Reset
-        axi4s_s_mosi : in  t_axi4s_mosi;    --! Input Axi4s
-        axi4s_s_miso : out t_axi4s_miso;    --! Input Backpressure
-        axi4s_m_mosi : out t_axi4s_mosi;    --! Output Axi4s
-        axi4s_m_miso : in  t_axi4s_miso     --! Output Backpressure
-    );
-end component;
-
-component tx_path_top is
-    generic (
-        G_FPGA_VENDOR         : string  := "xilinx";     --! Selects the FPGA Vendor for Compilation
-        G_FPGA_FAMILY         : string  := "all";        --! Selects the FPGA Family for Compilation
-        G_FIFO_IMPLEMENTATION : string  := "auto";       --! Selects how the Fitter implements the FIFO Memory
-        G_UDP_CORE_BYTES      : natural := 8;            --! Width of Data Bus in Bytes
-        G_NUM_OF_ARP_POS      : natural := 8;            --! Number Of ARP Entry Positions in the LUT
-        G_INC_PING            : boolean := true;         --! Include Ping Logic
-        G_INC_ARP             : boolean := true;         --! Include ARP Logic
-        G_INC_LUTS            : boolean := true;
-        G_TX_BACKPRESSURE     : boolean := false;        --! Whether Tx Path Needs To Respond To Backpressure
-        G_CORE_FREQ_KHZ       : integer := 156250;       --! Frequency Of Core To Calibrate ARP Timers
-        G_TX_EXT_ETH_FIFO_CAP : integer := (64 * 4 * 8); --! Capacity Of External Ethernet Handler FIFOs
-        G_TX_EXT_IP_FIFO_CAP  : integer := (64 * 4 * 8); --! Capacity Of External IPV4 Handler FIFOs
-        G_TX_OUT_FIFO_CAP     : integer := (64 * 4 * 8); --! Capacity Of FIFO at Output Of Tx PAth
-        G_INC_ETH             : boolean := false;        --! Generate Logic To Transmit Externally Provided Ethernet Payloads
-        G_INC_IPV4            : boolean := false;        --! Generate Logic To Transmit Externally Provided IPV4 Payloads
-        debug_arp             : boolean := false
-    );
-    port (
-        tx_path_clk           : in std_logic; --! General Tx Path Clock
-        tx_path_rst_s_n       : in std_logic; --! Active Low Synchronous Reset
-        arp_mode_status_regs  : out t_arp_mode_control;
-        arp_mode_control_regs : in t_arp_mode_control;
-        farm_mode_lut_status  : out t_farm_mode_lut_in;
-        farm_mode_lut_control : in t_farm_mode_lut_out;
-        tx_axi4s_m_aclk       : in std_logic;     --! Tx PHY Axi4s Clk
-        tx_axi4s_m_areset_n   : in std_logic;     --! Tx PHY Axi4s Reset
-        tx_out_axi4s_s_mosi   : out t_axi4s_mosi; --! Axi4s Packet Data Out
-        tx_out_axi4s_s_miso   : in t_axi4s_miso;  --! Axi4s Packet Backpressure
-        udp_axi4s_s_mosi      : in t_axi4s_mosi;  --! Axi4s UDP In Data
-        udp_axi4s_s_miso      : out t_axi4s_miso; --! Axi4s UDP In Backpressure, Used
-        ping_axi4s_s_mosi     : in t_axi4s_mosi;  --! Axi4s Ping In Data
-        ping_axi4s_s_miso     : out t_axi4s_miso; --! Axi4s Ping In Backpressre, Feeds FIFO
-        arp_axi4s_s_mosi      : in t_axi4s_mosi;  --! Axi4s ARP In Data
-        arp_axi4s_s_miso      : out t_axi4s_miso; --! Axi4s ARP In Backpressure, Feeds FIFO
-        ping_addr_s_mosi      : in t_axi4s_mosi;  --! Ping Addresses From Rx Path To Route Reply
-        ping_addr_s_miso      : out t_axi4s_miso; --! Ping Address Backpressure, Feeds FIFO
-        --Signals from the axi4lite memory maps
-        lut_mode_active : in std_logic; --! Enables LUT Mode - Routing Packets via LUT entries
-        tuser_dst_prt   : in std_logic;
-        tuser_src_prt   : in std_logic;
-        dst_mac_addr    : in std_logic_vector(47 downto 0); --! Dst Mac Addr of Core
-        src_mac_addr    : in std_logic_vector(47 downto 0); --! Src MAC Addr of Core
-        dst_ip_addr     : in std_logic_vector(31 downto 0); --! Dst IP Addr Of Core
-        src_ip_addr     : in std_logic_vector(31 downto 0); --! Src IP Addr Of Core
-        dst_port_addr   : in std_logic_vector(15 downto 0); --! Dst Port Addr Of Core
-        src_port_addr   : in std_logic_vector(15 downto 0); --! Src Port Addr Of Core
-        ifg_val         : in std_logic_vector(7 downto 0);  --! Insert additional Interframe gaps between packets
-        packet_type     : in std_logic_vector(15 downto 0); --! Used to Construct header fields
-        ip_ver_hdr_len  : in std_logic_vector(7 downto 0);  --! Used to Construct header fields
-        ip_service      : in std_logic_vector(7 downto 0);  --! Used to Construct header fields
-        ip_ident_count  : in std_logic_vector(15 downto 0); --! Used to Construct header fields
-        ip_flag_frag    : in std_logic_vector(15 downto 0); --! Used to Construct header fields
-        ip_time_to_live : in std_logic_vector(7 downto 0);  --! Used to Construct header fields
-        ip_protocol     : in std_logic_vector(7 downto 0);  --! Used to Construct header fields
-        --Optional Eth Packet AXI4-Stream Slave Side (UDP Core Transmit Data):
-        eth_axi4s_s_aclk     : in std_logic    := '0';                  --! Uns Ethernet Packet Tx In Clk
-        eth_axi4s_s_areset_n : in std_logic    := '0';                  --! Uns Ethernet Packet Tx In Reset
-        eth_axis_s_mosi      : in t_axi4s_mosi := c_axi4s_mosi_default; --! Axi4s External Ethernet Data
-        eth_axis_s_miso      : out t_axi4s_miso;                        --! Axi4s External Ethernet Backpressure
-        -- Optional IPV4 Packet AXI4-Stream Slave Side (UDP Core Transmit Data):
-        ipv4_axi4s_s_aclk     : in std_logic    := '0';                  --! Uns IPV4 Packet Tx In Clk
-        ipv4_axi4s_s_areset_n : in std_logic    := '0';                  --! Uns IPV4 Packet Tx In Reset
-        ipv4_axis_s_mosi      : in t_axi4s_mosi := c_axi4s_mosi_default; --! Axi4s External IPV4 Data
-        ipv4_axis_s_miso      : out t_axi4s_miso;                         --! Axi4s External IPV4 Backpressure
-        tx_udp_count          : out std_logic_vector(31 downto 0);
-        tx_arp_count          : out std_logic_vector(31 downto 0);
-        tx_ping_count         : out std_logic_vector(31 downto 0) 
-    );
-end component  ;
-
     constant C_RX_TX_CROSS_FIFO_WIDTH : integer       := 5;
     constant C_PING_FIFO_DESC         : t_axi4s_descr := (tdata_nof_bytes => G_UDP_CORE_BYTES,
                                                           tid_width       => 8,
@@ -398,7 +209,7 @@ begin
     -- Rx To Tx Path Clk Crossing FIFOs: ARP, Ping and Ping Addresses
     ----------------------------------------------------------------------------
     gen_ping : if G_INC_PING and G_INC_RX_PATH generate
-        ping_cross_fifo_inst : axi4s_fifo
+        ping_cross_fifo_inst : entity work.axi4s_fifo
             generic map(
                 g_fpga_vendor         => G_FPGA_VENDOR,
                 g_fpga_family         => G_FPGA_FAMILY,
@@ -421,7 +232,7 @@ begin
                 axi4s_m_miso => axi4s_tx_ping_s_miso
             );
 
-        ping_addr_fifo_inst : axi4s_fifo
+        ping_addr_fifo_inst : entity work.axi4s_fifo
             generic map(
                 g_fpga_vendor         => G_FPGA_VENDOR,
                 g_fpga_family         => G_FPGA_FAMILY,
@@ -454,7 +265,7 @@ begin
     end generate gen_ping;
 
     gen_arp : if G_INC_ARP and G_INC_RX_PATH generate
-        arp_cross_fifo_inst : axi4s_fifo
+        arp_cross_fifo_inst : entity work.axi4s_fifo
             generic map(
                 g_fpga_vendor         => G_FPGA_VENDOR,
                 g_fpga_family         => G_FPGA_FAMILY,
@@ -489,7 +300,7 @@ begin
     -- UDP Core Receive Path:
     --------------------------------------------------------------------------------
     gen_rx_path: if G_INC_RX_PATH generate
-        rx_path_top_inst : rx_path_top
+        rx_path_top_inst : entity work.rx_path_top
             generic map(
                 G_FPGA_VENDOR         => G_FPGA_VENDOR,
                 G_FPGA_FAMILY         => G_FPGA_FAMILY,
@@ -539,7 +350,7 @@ begin
                 dropped_port_count     => rx_dropped_port_count
             );
     
-        udp_out_pipe_inst : udp_axi4s_pipe
+        udp_out_pipe_inst : entity work.udp_axi4s_pipe
             generic map(
                 G_STAGES       => 2,
                 G_BACKPRESSURE => false
@@ -570,7 +381,7 @@ begin
     -- End of UDP Core Receive Path
     --------------------------------------------------------------------------------
 
-    tx_path_top_inst : tx_path_top
+    tx_path_top_inst : entity work.tx_path_top
         generic map(
             G_NUM_OF_ARP_POS      => G_NUM_OF_ARP_POS,
             G_FPGA_VENDOR         => G_FPGA_VENDOR,

@@ -21,49 +21,30 @@ entity tx_mux_timeslice is
         ipb_rst: in std_logic;
         ipb_in: in  ipb_wbus;
         ipb_out: out ipb_rbus;
-        src_clk: in std_logic; -- DUNE base clock (62.5MHz)
-        src_rst: in std_logic; -- DUNE base clock sync reset (src_clk)
-        ts: in std_logic_vector(63 downto 0);
-        samp: buffer std_logic; -- Sample flag
-        mark: out std_logic -- Timeslice marker
+        dune_base_clk: in std_logic; -- DUNE base clock (62.5MHz)
+        dune_base_rst: in std_logic; -- DUNE base clock sync reset (src_clk)
+        ts_dune_clk: in std_logic_vector(63 downto 0);
+        data_clk: in std_logic;
+        samp: out std_logic; -- Sample flag
+        mark: out std_logic; -- Timeslice marker
+        ts_data_clk: out std_logic_vector(63 downto 0)
     );
 
 end entity tx_mux_timeslice;
 
 architecture rtl of tx_mux_timeslice is
 
-component  ipbus_ctrlreg_v is
-	generic(
-		N_CTRL: natural := 1;
-		N_STAT: natural := 1;
-		SWAP_ORDER: boolean := false
-	);
-	port(
-		clk: in std_logic;
-		reset: in std_logic;
-		ipbus_in: in ipb_wbus;
-		ipbus_out: out ipb_rbus;
-		d: in ipb_reg_v(N_STAT - 1 downto 0) := (others => (others => '0'));
-		q: out ipb_reg_v(N_CTRL - 1 downto 0);
-		qmask: in ipb_reg_v(N_CTRL - 1 downto 0) := (others => (others => '1'));		
-		stb: out std_logic_vector(N_CTRL - 1 downto 0)
-	);
-	
-end component;
-
     signal ctrl: ipb_reg_v(0 downto 0);
     signal stat: ipb_reg_v(1 downto 0);
-    signal ctrl_sample, s, sd: std_logic;
+    signal ctrl_sample, s, sd, samp_dune_clk: std_logic;
+    signal cdc_dest_logic_rx: std_logic;
     signal t: std_logic_vector(63 downto 0);
-    
 
 begin
 
 -- CSR registers
 
-
-
-    csr: ipbus_ctrlreg_v
+    csr: entity work.ipbus_ctrlreg_v
 		generic map(
 			N_CTRL => 1,
 			N_STAT => 2
@@ -87,15 +68,46 @@ begin
         port map(
             clks => ipb_clk,
             d(0) => ctrl_sample,
-            clk => src_clk,
+            clk => dune_base_clk,
             q(0) => s
         );
 
-    sd <= s when rising_edge(src_clk);
-    samp <= s and not sd;
+    sd <= s when rising_edge(dune_base_clk);
+    samp_dune_clk <= s and not sd;
 
-    t <= ts when samp = '1' and rising_edge(src_clk);
+    t <= ts_dune_clk when samp_dune_clk = '1' and rising_edge(dune_base_clk);
 
-    mark <= ts(TIMESLICE_RADIX - 1);
-
+    sync_samp: entity work.tx_syncreg
+        generic map(
+            N => 1
+        )
+        port map(
+            clks => dune_base_clk,
+            d(0) => samp_dune_clk,
+            clk  => data_clk,
+            q(0) => samp
+        );
+    
+    xpm_cdc_handshake_inst : xpm_cdc_handshake
+    generic map (
+       DEST_EXT_HSK => 0,   -- DECIMAL; 0=internal handshake, 1=external handshake
+       DEST_SYNC_FF => 4,   -- DECIMAL; range: 2-10
+       INIT_SYNC_FF => 0,   -- DECIMAL; 0=disable simulation init values, 1=enable simulation init values
+       SIM_ASSERT_CHK => 0, -- DECIMAL; 0=disable simulation messages, 1=enable simulation messages
+       SRC_SYNC_FF => 2,    -- DECIMAL; range: 2-10
+       WIDTH => 64          -- DECIMAL; range: 1-1024
+    )
+    port map (
+       dest_out => ts_data_clk,
+       dest_req => open,
+       src_rcv => cdc_dest_logic_rx,
+       dest_ack => '1',
+       dest_clk => data_clk,
+       src_clk => dune_base_clk,
+       src_in => ts_dune_clk,
+       src_send => not cdc_dest_logic_rx
+    );
+    
+    mark <= ts_data_clk(TIMESLICE_RADIX - 1);
+    
 end architecture rtl;

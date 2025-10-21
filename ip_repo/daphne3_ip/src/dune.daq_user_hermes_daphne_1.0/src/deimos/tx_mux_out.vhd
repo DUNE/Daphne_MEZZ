@@ -42,26 +42,6 @@ end entity tx_mux_out;
 
 architecture rtl of tx_mux_out is
 
-
-component  ipbus_ctrlreg_v is    -- declared this component Jacques
-	generic(
-		N_CTRL: natural := 1;
-		N_STAT: natural := 1;
-		SWAP_ORDER: boolean := false
-	);
-	port(
-		clk: in std_logic;
-		reset: in std_logic;
-		ipbus_in: in ipb_wbus;
-		ipbus_out: out ipb_rbus;
-		d: in ipb_reg_v(N_STAT - 1 downto 0) := (others => (others => '0'));
-		q: out ipb_reg_v(N_CTRL - 1 downto 0);
-		qmask: in ipb_reg_v(N_CTRL - 1 downto 0) := (others => (others => '1'));		
-		stb: out std_logic_vector(N_CTRL - 1 downto 0)
-	);
-	
-end component;
-
     constant IFACE: std_logic_vector(1 downto 0) := std_logic_vector(to_unsigned(IFACE_ID, 2));
 
 	signal ctrl, stat: ipb_reg_v(0 downto 0);
@@ -85,7 +65,7 @@ end component;
 
 begin
 
-    csr: ipbus_ctrlreg_v
+    csr: entity work.ipbus_ctrlreg_v
         generic map(
             N_CTRL => 1,
             N_STAT => 1

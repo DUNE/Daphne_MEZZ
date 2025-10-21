@@ -19,7 +19,7 @@ entity crc32_8_bytewise_lut_python is
     port(
         data_in : in  std_logic_vector(G_NOF_LUTS * 8 - 1 downto 0);
         crc_out : out std_logic_vector(31 downto 0)
-    );
+    ); 
 end entity crc32_8_bytewise_lut_python;
 
 architecture behavioral of crc32_8_bytewise_lut_python is

@@ -65,7 +65,7 @@ begin
     reg(2**ADDR_WIDTH-1 downto N_REG) <= (others=>(others=>'0'));
     q <= reg(N_REG-1 downto 0);
 
-    ipbus_out.ipb_rdata <= ext_signal(sel) when use_ext='1' else reg(sel);  --- Jacques
+    ipbus_out.ipb_rdata <= ext_signal(sel) when use_ext else reg(sel);
     ipbus_out.ipb_ack <= ipbus_in.ipb_strobe;
     ipbus_out.ipb_err <= '0';
 

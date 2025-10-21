@@ -56,77 +56,6 @@ end entity tx_ping_handler;
 
 architecture behavioural of tx_ping_handler is
 
-component  axi4s_fifo is
-     generic (
-          g_fpga_vendor        : string        := "xilinx";      --For xpm doesnt affect anything
-          g_fpga_family        : string        := "all";         --For xpm doesnt affect anything
-          g_implementation     : string        := "distributed"; --For xpm doesnt affect anything
-          g_dual_clock         : boolean       := true;
-          g_wr_adr_width       : integer       := 5;
-          g_prog_full_val      : positive      := 20;
-          g_sanity_check       : boolean       := true;  --TODO not implemented yet
-          g_in_endianess_swap  : boolean       := false; --TODO not implemented yet
-          g_out_endianess_swap : boolean       := false; --TODO not implemented yet
-          g_axi4s_descr        : t_axi4s_descr := (tdata_nof_bytes => 4,
-          tid_width                                                => 32,
-          tuser_width                                              => 32,
-          has_tlast                                                => 1,
-          has_tkeep                                                => 1,
-          has_tid                                                  => 0,
-          has_tuser                                                => 0);
-          g_in_tdata_nof_bytes       : integer := 4;
-          g_out_tdata_nof_bytes      : integer := 4;
-          g_bram_partition_width     : integer := 0;    --TODO not implemented yet
-          g_hold_last_read           : boolean := true; --TODO not implemented yet
-          g_full_packet              : boolean := false;
-          g_packet_fifo_wr_adr_width : integer := 4 --TODO not implemented yet
-     );
-     port (
-          s_axi_clk    : in std_logic;
-          s_axi_rst_n  : in std_logic;
-          m_axi_clk    : in std_logic;
-          m_axi_rst_n  : in std_logic;
-          axi4s_s_mosi : in t_axi4s_mosi;
-          axi4s_s_miso : out t_axi4s_miso;
-          axi4s_m_mosi : out t_axi4s_mosi;
-          axi4s_m_miso : in t_axi4s_miso
-     );
-end component;
-
-component tx_ping_chksm is
-    generic(
-        G_UDP_CORE_WIDTH    : integer := 8                                              --! Width of Data bus in Bytes
-    );
-    port(
-        clk                 : in  std_logic;                                            --! Clk
-        rst_s_n             : in  std_logic;                                            --! Active Low synchronous reset
-        data_in             : in  std_logic_vector(G_UDP_CORE_WIDTH * 8 - 1 downto 0);  --! Ping Data in
-        width_in            : in  std_logic_vector(G_UDP_CORE_WIDTH - 1 downto 0);      --! Width of Valid Data
-        valid               : in  std_logic;                                            --! Ping Valid
-        sof                 : in  std_logic;                                            --! Start of Packet
-        eof                 : in  std_logic;                                            --! End of Packet
-        done                : out std_logic;                                            --! Calculations Finished
-        out_chksm           : out std_logic_vector(15 downto 0)                         --! Checksum Out
-    );
-end component  ;
-
-
-component tx_ping_chksm_1bytew is
-    port(
-        clk         : in  std_logic;                    --! Clk
-        rst_s_n     : in  std_logic;                    --! Active Low synchronous reset
-        data_in     : in  std_logic_vector(7 downto 0); --! Ping Data in
-        valid       : in  std_logic;                    --! Valid in
-        sof         : in  std_logic;                    --! Start of Packet
-        eof         : in  std_logic;                    --! End of Packet
-        done        : out std_logic;                    --! Calculations Finished
-        out_chksm   : out std_logic_vector(15 downto 0) --! Checksum Out
-    );
-end component  ;
-
-
-
-
     --CONSTANTS
     constant C_ICMP_HDR             : integer                       := 8;
     constant C_HDR_WORDS            : integer                       := header_words(C_ICMP_HDR, G_UDP_CORE_BYTES) + 1;
@@ -195,7 +124,7 @@ begin
     --The Ping Payload Needs to Start At different Times Depending On The Width Of The Core
     out_of_fifo_miso.tready <= ping_triggered;
 
-    ping_payload_fifo_inst : axi4s_fifo
+    ping_payload_fifo_inst : entity work.axi4s_fifo
         generic map(
             g_fpga_vendor         => G_FPGA_VENDOR,
             g_fpga_family         => G_FPGA_FAMILY,
@@ -360,7 +289,7 @@ begin
 
     --Recalculate Ping Checksums to compare against
     gen_ping_chksm : if G_UDP_CORE_BYTES >= 4 generate
-        ping_checksum_inst : tx_ping_chksm
+        ping_checksum_inst : entity work.tx_ping_chksm
             generic map(G_UDP_CORE_WIDTH => G_UDP_CORE_BYTES)
             port map(
                 clk       => clk,
@@ -375,7 +304,7 @@ begin
             );
     end generate;
     gen_ping_chksm_w8 : if G_UDP_CORE_BYTES = 1 generate
-        ping_checksum_1bytew_inst : tx_ping_chksm_1bytew
+        ping_checksum_1bytew_inst : entity work.tx_ping_chksm_1bytew
             port map(
                 clk       => clk,
                 rst_s_n   => rst_s_n,

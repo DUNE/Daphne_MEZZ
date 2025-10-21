@@ -14,7 +14,7 @@ use work.ipbus.all;
 use work.ipbus_reg_types.all;
 use work.ipbus_decode_tx_mux.all;
 
-use work.tx_mux_decl.all;
+use work.tx_mux_decl.all; 
 
 entity tx_mux is
     generic(
@@ -44,41 +44,6 @@ end entity tx_mux;
 
 architecture rtl of tx_mux is
 
-component  ipbus_ctrlreg_v is   --declaring componets   Jacques
-	generic(
-		N_CTRL: natural := 1;
-		N_STAT: natural := 1;
-		SWAP_ORDER: boolean := false
-	);
-	port(
-		clk: in std_logic;
-		reset: in std_logic;
-		ipbus_in: in ipb_wbus;
-		ipbus_out: out ipb_rbus;
-		d: in ipb_reg_v(N_STAT - 1 downto 0) := (others => (others => '0'));
-		q: out ipb_reg_v(N_CTRL - 1 downto 0);
-		qmask: in ipb_reg_v(N_CTRL - 1 downto 0) := (others => (others => '1'));		
-		stb: out std_logic_vector(N_CTRL - 1 downto 0)
-	);
-	
-end component;
-
-component ipbus_fabric_sel is
-  generic(
-    NSLV: positive;
-    STROBE_GAP: boolean := false;
-    SEL_WIDTH: natural
-   );
-  port(
-  	sel: in std_logic_vector(SEL_WIDTH - 1 downto 0);
-    ipb_in: in ipb_wbus;
-    ipb_out: out ipb_rbus;
-    ipb_to_slaves: out ipb_wbus_array(NSLV - 1 downto 0);
-    ipb_from_slaves: in ipb_rbus_array(NSLV - 1 downto 0) := (others => IPB_RBUS_NULL)
-   );
-
-end component;
-
     constant stat_reg_0_padding: std_logic_vector(28 - N_SRC - 1 downto 0) := (others=>'0');
     
     signal ipbw: ipb_wbus_array(N_SLAVES - 1 downto 0);
@@ -103,7 +68,7 @@ end component;
 
 begin
 
-    fabric: ipbus_fabric_sel
+    fabric: entity work.ipbus_fabric_sel
         generic map(
             NSLV => N_SLAVES,
             SEL_WIDTH => IPBUS_SEL_WIDTH
@@ -118,7 +83,7 @@ begin
 
 -- CSR registers
 
-    csr:ipbus_ctrlreg_v
+    csr: entity work.ipbus_ctrlreg_v
 		generic map(
 			N_CTRL => 1,
 			N_STAT => 2
@@ -181,7 +146,7 @@ begin
 
     sync_mark: entity work.tx_syncreg
         port map(
-            clks => src_clk,
+            clks => src_clk, 
             d(0) => mark,
             clk => eth_clk,
             q(0) => mark_r
@@ -192,7 +157,7 @@ begin
 
 -- Input buffers
 
-	fabric_buf: ipbus_fabric_sel
+	fabric_buf: entity work.ipbus_fabric_sel
 		generic map(
 			NSLV => N_SRC,
 			SEL_WIDTH => 8

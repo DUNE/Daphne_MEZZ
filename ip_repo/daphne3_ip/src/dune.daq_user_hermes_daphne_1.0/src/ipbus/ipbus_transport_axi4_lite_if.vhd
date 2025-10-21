@@ -108,36 +108,6 @@ architecture rtl of ipbus_transport_axi4_lite_if is
       bram_rddata_b : in std_logic_vector(31 downto 0)
     );
   end component;
-  
-  component ipbus_transport_ram_if is
-  generic (
-    -- Number of address bits to select RX or TX buffer
-    -- Number of RX and TX buffers is 2 ** INTERNALWIDTH
-    BUFWIDTH: natural;
-
-    -- Number of address bits within each buffer
-    -- Size of each buffer is 2**ADDRWIDTH
-    ADDRWIDTH: natural
-  );
-  port (
-    ram_clk: in std_logic;
-    ipb_clk: in std_logic;
-    rst_ipb: in std_logic;
-
-    wr_addr : in std_logic_vector(BUFWIDTH + ADDRWIDTH - 1 downto 0);
-    wr_data : in std_logic_vector(31 downto 0);
-    wr_en   : in std_logic;
-
-    rd_addr : in std_logic_vector(BUFWIDTH + ADDRWIDTH - 1 downto 0);
-    rd_data : out std_logic_vector(31 downto 0);
-
-    pkt_done : out std_logic;
-
-    trans_out : in ipbus_trans_out;
-    trans_in  : out ipbus_trans_in
-  );
-
-end component;
 
   signal bram_wr_addr, bram_rd_addr : std_logic_vector(BUFWIDTH+ADDRWIDTH+2 downto 0);
   signal bram_wr_en, bram_we, ram_rd_en : std_logic;
@@ -192,7 +162,7 @@ begin
 
   bram_we <= axi_rstn and bram_wr_en and bram_wr_we(0);
 
-  ram_to_trans : ipbus_transport_ram_if
+  ram_to_trans : entity work.ipbus_transport_ram_if
     generic map (
       BUFWIDTH => BUFWIDTH,
       ADDRWIDTH => ADDRWIDTH

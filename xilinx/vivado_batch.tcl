@@ -37,12 +37,12 @@ set v_git_sha "28'h$git_sha"
 puts "INFO: passing git commit number $v_git_sha to top level generic"
 
 # verify if the block design exists, if not, create it
-set bdFile ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
+set bdFile ../bd/DAPHNE_MEZ_SELFTRIGGER_V1/DAPHNE_MEZ_SELFTRIGGER_V1.bd
 if {![file exists $bdFile]} {
     # the file does not exist, create it, then read it
     # since sourcing the tcl file updates the IP catalog, we don't have to do it here
     source ./daphne3_bd_gen.tcl
-    read_bd ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
+    read_bd ../bd/DAPHNE_MEZ_SELFTRIGGER_V1/DAPHNE_MEZ_SELFTRIGGER_V1.bd
 } else {
     # the file exist
     # re package the IP to consider possible changes to its source files
@@ -55,16 +55,16 @@ if {![file exists $bdFile]} {
     update_ip_catalog 
 
     # read the block design
-    read_bd ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
+    read_bd ../bd/DAPHNE_MEZ_SELFTRIGGER_V1/DAPHNE_MEZ_SELFTRIGGER_V1.bd
 
     # open the block design
-    open_bd_design ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
+    open_bd_design ../bd/DAPHNE_MEZ_SELFTRIGGER_V1/DAPHNE_MEZ_SELFTRIGGER_V1.bd
 
     # upgrade the DAPHNE IP
-    upgrade_ip [get_ips DAPHNE_V3_F4_3_DAPHNE3_0]
+    upgrade_ip [get_ips DAPHNE_MEZ_SELFTRIGGER_V1]
 
     # re configure the version parameter of the IP with the current git commit number
-    set_property CONFIG.version $v_git_sha [get_ips DAPHNE_V3_F4_3_DAPHNE3_0]
+    set_property CONFIG.version $v_git_sha [get_ips DAPHNE_MEZ_SELFTRIGGER_V1]
 
     # regenerate layout so it looks cleaner
     regenerate_bd_layout
@@ -80,23 +80,23 @@ if {![file exists $bdFile]} {
 }
 
 # make the wrapper of the block design needed for later synthesis and implementation
-make_wrapper -top -files [get_files ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd] 
-read_vhdl ../bd/DAPHNE_V3_F4_3/hdl/DAPHNE_V3_F4_3_wrapper.vhd
+make_wrapper -top -files [get_files ../bd/DAPHNE_MEZ_SELFTRIGGER_V1/DAPHNE_MEZ_SELFTRIGGER_V1.bd] 
+read_vhdl ../bd/DAPHNE_MEZ_SELFTRIGGER_V1/hdl/DAPHNE_MEZ_SELFTRIGGER_V1_wrapper.vhd
 
 # load general placement constraints...
 read_xdc -verbose ./DAPHNE_V3_PIN_MAP.xdc
 
 # generate the output products of the Block Design needed for synthesis and implementation
-set_property synth_checkpoint_mode None [get_files ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd]
-generate_target all [get_files ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd]
+set_property synth_checkpoint_mode None [get_files ../bd/DAPHNE_MEZ_SELFTRIGGER_V1/DAPHNE_MEZ_SELFTRIGGER_V1.bd]
+generate_target all [get_files ../bd/DAPHNE_MEZ_SELFTRIGGER_V1/DAPHNE_MEZ_SELFTRIGGER_V1.bd]
 
 # synth design...
-synth_design -top DAPHNE_V3_F4_3_wrapper -directive PerformanceOptimized
+synth_design -top DAPHNE_MEZ_SELFTRIGGER_V1_wrapper -directive PerformanceOptimized
 report_clocks -file $outputDir/clocks.rpt
 report_timing_summary -file $outputDir/post_synth_timing_summary.rpt
 report_power -file $outputDir/post_synth_power.rpt
 report_utilization -file $outputDir/post_synth_util.rpt
-write_checkpoint -force $outputDir/DAPHNE_V3_F4_3_synth.dcp
+write_checkpoint -force $outputDir/DAPHNE_MEZ_SELFTRIGGER_V1_synth.dcp
 
 # place...
 opt_design -directive Explore
@@ -109,7 +109,7 @@ report_timing -sort_by group -max_paths 100 -path_type summary -file $outputDir/
 # route...
 route_design -directive AlternateCLBRouting
 phys_opt_design -directive AggressiveExplore
-write_checkpoint -force $outputDir/DAPHNE_V3_F4_3_post_route.dcp
+write_checkpoint -force $outputDir/DAPHNE_MEZ_SELFTRIGGER_V1_post_route.dcp
 
 # generate reports...
 report_timing_summary -file $outputDir/post_route_timing_summary.rpt
@@ -119,17 +119,17 @@ report_utilization -file $outputDir/post_route_util.rpt
 report_power -file $outputDir/post_route_power.rpt
 report_drc -file $outputDir/post_imp_drc.rpt
 report_io -file $outputDir/io.rpt
-write_checkpoint -force $outputDir/DAPHNE_V3_F4_3_post_impl.dcp
+write_checkpoint -force $outputDir/DAPHNE_MEZ_SELFTRIGGER_V1_post_impl.dcp
 
 # generate bitstream...
-write_bitstream -force -bin_file $outputDir/daphne3_$git_sha.bit
+write_bitstream -force -bin_file $outputDir/daphne3_st_$git_sha.bit
 # write_bitstream -force -bin_file $outputDir/daphne3.bit
 
 # write out ILA debug probes file
 write_debug_probes -force $outputDir/probes.ltx
 
 # export the implemented hardware system to the Vitis environment
-write_hw_platform -fixed -force -include_bit -file $outputDir/daphne3_$git_sha.xsa
+write_hw_platform -fixed -force -include_bit -file $outputDir/daphne3_st_$git_sha.xsa
 # write_hw_platform -fixed -force -file $outputDir/daphne3.xsa
  
 # define if the script is running on Windows or Linux
@@ -139,7 +139,7 @@ if {$tcl_platform(os) eq "Linux"} {
     # since we are running on Linux, we can generate everything up to the overlay folder
     # including .bin .dtbo and .json files
     # now package the overlay needed files
-    set overlayDir [file join $outputDir "daphne3_OL_$git_sha"]
+    set overlayDir [file join $outputDir "daphne3_st_OL_$git_sha"]
     file mkdir $overlayDir
  
     # check if vitis is on PATH
@@ -156,13 +156,13 @@ if {$tcl_platform(os) eq "Linux"} {
  
         # run the XSCT script
         puts "INFO: Generating Device Tree files."
-        if {[catch {exec $xsct_exe daphne3_dtbo_gen.tcl "$outputDir/daphne3_$git_sha.xsa" $outputDir $git_sha 2>@1} result]} {
+        if {[catch {exec $xsct_exe daphne3_dtbo_gen.tcl "$outputDir/daphne3_st_$git_sha.xsa" $outputDir $git_sha 2>@1} result]} {
             error "ERROR: xsct command failed:\n$result"
         }
         puts "INFO: Device Tree files have been generated."
  
         # locate the DTSI file
-        set pl_dtsi_path [glob -nocomplain -types f "$outputDir/daphne3_$git_sha/*/*/*/*/*/*/pl.dtsi"]
+        set pl_dtsi_path [glob -nocomplain -types f "$outputDir/daphne3_st_$git_sha/*/*/*/*/*/*/pl.dtsi"]
  
         # add missing lines for AXI Quad SPI module
         puts "INFO: Adding missing lines for AXI Quad SPI module in the dtsi file."
@@ -171,7 +171,7 @@ if {$tcl_platform(os) eq "Linux"} {
  
         # compile the Device Tree
         puts "INFO: Compiling Device Tree."
-        if {[catch {exec dtc -@ -O dtb -o $outputDir/daphne3_$git_sha.dtbo $pl_dtsi_path 2>@1} result]} {
+        if {[catch {exec dtc -@ -O dtb -o $outputDir/daphne3_st_$git_sha.dtbo $pl_dtsi_path 2>@1} result]} {
             error "ERROR: dtc command failed:\n$result"
         }        
         puts "INFO: Device Tree files have been compiled."
@@ -183,13 +183,13 @@ if {$tcl_platform(os) eq "Linux"} {
  
         # now, move all the necessary files to the overlay folder
         puts "INFO: Creating Overlay folder."
-        file rename -force $outputDir/daphne3_$git_sha.dtbo $overlayDir/daphne3_OL_$git_sha.dtbo
-        file rename -force $outputDir/daphne3_$git_sha.bin $overlayDir/daphne3_OL_$git_sha.bin
+        file rename -force $outputDir/daphne3_st_$git_sha.dtbo $overlayDir/daphne3_st_OL_$git_sha.dtbo
+        file rename -force $outputDir/daphne3_st_$git_sha.bin $overlayDir/daphne3_st_OL_$git_sha.bin
         file rename -force $outputDir/shell.json $overlayDir/shell.json
  
         # zip the resulting folder 
         cd $outputDir
-        exec zip -r daphne3_OL_$git_sha.zip daphne3_OL_$git_sha
+        exec zip -r daphne3_st_OL_$git_sha.zip daphne3_st_OL_$git_sha
         puts "INFO: Successfully generated Device Tree Overlay folder."
  
         # finally, we're ready to go, so we can exit Vivado
@@ -218,7 +218,7 @@ if {$tcl_platform(os) eq "Linux"} {
  
         # run the XSCT script
         puts "INFO: Generating Device Tree files."
-        if {[catch {exec $xsct_exe -eval "hsi::open_hw_design $outputDir/daphne3_$git_sha.xsa; createdts -hw $outputDir/daphne3_$git_sha.xsa -zocl -platform-name daphne3_$git_sha -git-branch xlnx_rel_v2022.2 -overlay -out $outputDir/daphne3_$git_sha; exit" 2>@1} result]} {
+        if {[catch {exec $xsct_exe -eval "hsi::open_hw_design $outputDir/daphne3_st_$git_sha.xsa; createdts -hw $outputDir/daphne3_st_$git_sha.xsa -zocl -platform-name daphne3_st_$git_sha -git-branch xlnx_rel_v2022.2 -overlay -out $outputDir/daphne3_st_$git_sha; exit" 2>@1} result]} {
             error "ERROR: xsct command failed:\n$result"
         }
         puts "INFO: Device Tree files have been generated."

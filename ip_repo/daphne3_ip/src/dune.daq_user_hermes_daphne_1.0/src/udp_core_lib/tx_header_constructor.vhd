@@ -79,38 +79,6 @@ end entity tx_header_constructor;
 
 architecture behavioral of tx_header_constructor is
 
-
-component  udp_ip_chksm_calc is
-    port(
-        clk                 : in  std_logic;                        --! Clk
-        rst_s_n             : in  std_logic;                        --! Active Low synchronous Reset
-        -- Control
-        start               : in  STD_LOGIC;                        --! Start Signal
-        busy                : out std_logic;                        --! Calc in Progress
-        done                : out std_logic;                        --! Calc Finished
-        -- IP
-        ip_ver_hdr_len      : in  std_logic_vector(7 downto 0);     --! IPV4 fields
-        ip_service          : in  std_logic_vector(7 downto 0);     --! IPV4 fields
-        ip_pkt_length       : in  std_logic_vector(15 downto 0);    --! IPV4 fields
-        ip_ident_count      : in  std_logic_vector(15 downto 0);    --! IPV4 fields
-        ip_flag_frag        : in  std_logic_vector(15 downto 0);    --! IPV4 fields
-        ip_time_to_live     : in  std_logic_vector(7 downto 0);     --! IPV4 fields
-        ip_protocol         : in  std_logic_vector(7 downto 0);     --! IPV4 fields
-        ip_dst_addr         : in  std_logic_vector(31 downto 0);    --! IPV4 fields
-        ip_src_addr         : in  std_logic_vector(31 downto 0);    --! IPV4 fields
-        -- UDP
-        udp_dst_port_addr   : in  std_logic_vector(15 downto 0);    --! UDP fields
-        udp_src_port_addr   : in  std_logic_vector(15 downto 0);    --! UDP fields
-        udp_length          : in  std_logic_vector(15 downto 0);    --! UDP fields
-        udp_data_checksum   : in  std_logic_vector(31 downto 0);    --! UDP fields
-        -- UDP checksum zero
-        udp_chk_sum_zero    : in  std_logic;                        --! Unused
-        -- checksums
-        ip_chksm            : out std_logic_vector(15 downto 0);    --! IPv4 Header Checksum Out
-        udp_chksm           : out std_logic_vector(15 downto 0)     --! UDP Header Checksum Out
-    );
-end component  ;
-
     constant C_HEADER_TOTAL_BYTES : integer                       := 42;
     constant C_HEADER_EMPTY_BYTES : integer                       := 64;
     constant C_HEADER_UDP         : integer                       := 42;
@@ -383,7 +351,7 @@ begin
         end if;
     end process;
 
-    checksum_calculations_inst : udp_ip_chksm_calc
+    checksum_calculations_inst : entity work.udp_ip_chksm_calc
         port map(
             clk               => clk,
             rst_s_n           => rst_s_n,

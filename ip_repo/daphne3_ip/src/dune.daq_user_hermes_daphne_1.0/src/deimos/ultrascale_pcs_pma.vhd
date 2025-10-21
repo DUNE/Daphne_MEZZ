@@ -46,7 +46,7 @@ entity ultrascale_pcs_pma is
       port(
         eth_clk_p           : in  std_logic;
         eth_clk_n           : in  std_logic;
-        --eth_clk :in std_logic ;
+
         ipb_clk             : in  std_logic;
         ipb_rst             : in  std_logic;
         ipb_in              : in  ipb_wbus;
@@ -201,80 +201,6 @@ architecture rtl of ultrascale_pcs_pma is
     );
     end component;
          
- component ipbus_fabric_sel is
-  generic(
-    NSLV: positive;
-    STROBE_GAP: boolean := false;
-    SEL_WIDTH: natural
-   );
-  port(
-  	sel: in std_logic_vector(SEL_WIDTH - 1 downto 0);
-    ipb_in: in ipb_wbus;
-    ipb_out: out ipb_rbus;
-    ipb_to_slaves: out ipb_wbus_array(NSLV - 1 downto 0);
-    ipb_from_slaves: in ipb_rbus_array(NSLV - 1 downto 0) := (others => IPB_RBUS_NULL)
-   );
-
-end component;        
-
-
-component  xxv_ethernet_0_clocking_wrapper is
-    port(
-        ge_ref_clk_p        : in  std_logic;
-        gt_ref_clk_n        : in  std_logic;
-        --eth_clk: in std_logic ;
-        gt_ref_clk          : out std_logic;
-        gt_ref_clk_out      : out std_logic
-    );
-end component;
-
-component ipbus_ctrlreg_v is
-	generic(
-		N_CTRL: natural := 1;
-		N_STAT: natural := 1;
-		SWAP_ORDER: boolean := false
-	);
-	port(
-		clk: in std_logic;
-		reset: in std_logic;
-		ipbus_in: in ipb_wbus;
-		ipbus_out: out ipb_rbus;
-		d: in ipb_reg_v(N_STAT - 1 downto 0) := (others => (others => '0'));
-		q: out ipb_reg_v(N_CTRL - 1 downto 0);
-		qmask: in ipb_reg_v(N_CTRL - 1 downto 0) := (others => (others => '1'));		
-		stb: out std_logic_vector(N_CTRL - 1 downto 0)
-	);
-	
-end component;
-
-
-component ipbus_freq_ctr is
-	generic(
-		N_CLK: natural := 1
-	);
-	port(
-		clk: in std_logic;
-		rst: in std_logic;
-		ipb_in: in ipb_wbus;
-		ipb_out: out ipb_rbus;
-		clkdiv: in std_logic_vector(N_CLK - 1 downto 0)
-	);
-
-
-	
-end component;
-
-component freq_ctr_div is
-	generic(
-		N_CLK: positive := 1
-	);
-	port(
-		clk: in std_logic_vector(N_CLK - 1 downto 0);
-		clkdiv: out std_logic_vector(N_CLK - 1 downto 0)
-	);
-	
-end component;
-         
     signal ipbw: ipb_wbus_array(N_SLAVES - 1 downto 0);
     signal ipbr: ipb_rbus_array(N_SLAVES - 1 downto 0);
         
@@ -333,7 +259,7 @@ end component;
 begin
     
     -- ipbus address decode
-    fabric: ipbus_fabric_sel
+    fabric: entity work.ipbus_fabric_sel
         generic map(
             NSLV        => N_SLAVES,
             SEL_WIDTH   => IPBUS_SEL_WIDTH
@@ -347,11 +273,10 @@ begin
         );
 
     
-    phy_clk: xxv_ethernet_0_clocking_wrapper
+    phy_clk: entity work.xxv_ethernet_0_clocking_wrapper
         port map(
             ge_ref_clk_p    => eth_clk_p,
             gt_ref_clk_n    => eth_clk_n,
-            --eth_clk => eth_clk,
             gt_ref_clk      => ref_clk,
             gt_ref_clk_out  => ref_clk_out
         );
@@ -393,7 +318,7 @@ begin
     or_reduce_qpll_0_reset(0) <= or_reduce(s_qpll_0_rst_logic_vector);
     or_reduce_qpll_1_reset(0) <= or_reduce(s_qpll_1_rst_logic_vector);
 
-    sfp_tx_dis_array <= (others  => '0');   ----Jacques . changing this to be zero to see if it allows the laser to be on
+    sfp_tx_dis_array <= (others  => '0');
     
     phy_gen: for i in 0 to N_MGT -1 generate
     
@@ -505,7 +430,7 @@ begin
     
 -- Debug register
 
-    tx_path_csr: ipbus_ctrlreg_v
+    tx_path_csr: entity work.ipbus_ctrlreg_v
         generic map(
             N_CTRL => 1,
             N_STAT => 1
@@ -534,7 +459,7 @@ begin
                                                     -----
                                                     --32
                                                     
-    freqdiv: freq_ctr_div
+    freqdiv: entity work.freq_ctr_div
         generic map(
             N_CLK => N_CLK_DEBUG
         )
@@ -545,7 +470,7 @@ begin
             clkdiv => clk_in
         );
 
-    freq: ipbus_freq_ctr
+    freq: entity work.ipbus_freq_ctr
         generic map(
             N_CLK => N_CLK_DEBUG
         )

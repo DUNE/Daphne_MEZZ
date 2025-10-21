@@ -14,8 +14,8 @@ use work.pdts_clock_defs.all;
 
 entity pdts_ep_sm is
 	generic(
-		SCLK_FREQ: real;
-		SKIP_FREQ: boolean;
+		SCLK_FREQ: real:=99.999;
+		SKIP_FREQ: boolean:= false ;
 		SKIP_TSTAMP: boolean -- Skip the timestamp initialisation step
 	);
 	port(
@@ -67,7 +67,7 @@ begin
 -- Wait for internal PLL lock
 				when ST_W_CLK =>
 					if clk_ok = '1' then
-						state <= ST_W_FREQ;
+						state <= ST_W_FREQ;  -- NEXT TRY TO CHANGE THIS
 					end if;					
 -- Wait for frequency match
 				when ST_W_FREQ =>

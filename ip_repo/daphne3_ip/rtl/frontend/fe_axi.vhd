@@ -72,7 +72,7 @@ entity fe_axi is
 		S_AXI_RREADY	: in std_logic;
 
         -- signals used by the front end, sync to S_AXI_ACLK
-
+        trig_IN: IN std_logic ;
         idelayctrl_ready: in std_logic;
         idelay_tap: out array_5x9_type;
         idelay_load: out std_logic_vector(4 downto 0);
@@ -305,12 +305,12 @@ begin
             -- make this pulse FOUR AXICLKs wide just to be safe, and make it come from a single register 
             -- (not a combi function of multiple registers) to be clean...
 
-            trig_reg(0) <= '0';
-            trig_reg(1) <= trig_reg(0);
-            trig_reg(2) <= trig_reg(1);
-            trig_reg(3) <= trig_reg(2);
-            trig_reg(4) <= trig_reg(3);
-            trig_reg(5) <= trig_reg(4) or trig_reg(3) or trig_reg(2) or trig_reg(1) or trig_reg(0);
+            trig_reg(0) <= '0' or trig_IN;
+            trig_reg(1) <= trig_reg(0)or trig_IN;
+            trig_reg(2) <= trig_reg(1)or trig_IN;
+            trig_reg(3) <= trig_reg(2)or trig_IN;
+            trig_reg(4) <= trig_reg(3)or trig_IN;
+            trig_reg(5) <= trig_reg(4) or trig_reg(3) or trig_reg(2) or trig_reg(1) or trig_reg(0)or trig_IN;
 
             -- idelay load pulse comes from AXICLK 100MHz and crosses into clk125 domain
             -- OK to make this two AXICLKs wide, and again, make this signal from a single register (idelay_load2_reg)

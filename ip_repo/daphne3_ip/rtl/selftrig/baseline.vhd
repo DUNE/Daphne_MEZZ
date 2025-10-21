@@ -11,7 +11,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity baseline is
-generic( runlength: integer := 256 ); -- must be power of 2: 32, 64, 128, or 256
+generic( baseline_runlength: integer := 256 ); -- must be power of 2: 32, 64, 128, or 256
 port(
     clock: in  std_logic;
     reset: in  std_logic;
@@ -22,7 +22,7 @@ end baseline;
 
 architecture baseline_arch of baseline is
 
-    signal baseline_reg: std_logic_vector(13 downto 0) := (others=>'1');
+    signal baseline_reg: std_logic_vector(13 downto 0) := "10000000000000"; -- mid-scale
     signal sum_reg: std_logic_vector(21 downto 0) := (others=>'0');
     signal count_reg: std_logic_vector(7 downto 0) := X"00";
 
@@ -37,9 +37,9 @@ begin
             if (reset='1') then
                 count_reg <= X"00";
                 sum_reg <= (others=>'0');
-                baseline_reg <= (others=>'1');
+                baseline_reg <= "10000000000000";
             else
-                case (runlength) is
+                case (baseline_runlength) is
                     when 32 =>
                         if (count_reg=X"1F") then
                             sum_reg <= "00000000" & din;

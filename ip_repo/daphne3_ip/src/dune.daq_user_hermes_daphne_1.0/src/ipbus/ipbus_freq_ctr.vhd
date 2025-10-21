@@ -42,7 +42,7 @@ use ieee.numeric_std.all;
 use work.ipbus.all;
 use work.ipbus_reg_types.all;
 library unisim;
-use unisim.VComponents.all;
+use unisim.VComponents.all; 
 
 entity ipbus_freq_ctr is
 	generic(

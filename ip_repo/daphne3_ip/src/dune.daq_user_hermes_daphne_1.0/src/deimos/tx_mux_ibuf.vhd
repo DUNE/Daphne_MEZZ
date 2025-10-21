@@ -12,7 +12,7 @@ use ieee.numeric_std.all;
 use ieee.std_logic_misc.all;
 
 library ipbus;
-use work.ipbus.ipbus.all;
+use work.ipbus.all;
 use work.ipbus_reg_types.all;
 
 library xpm;
@@ -44,26 +44,6 @@ entity tx_mux_ibuf is
 end entity tx_mux_ibuf;
 
 architecture rtl of tx_mux_ibuf is
-
-
-component  ipbus_ctrlreg_v is   -- declared this componet -- Jacques
-	generic(
-		N_CTRL: natural := 1;
-		N_STAT: natural := 1;
-		SWAP_ORDER: boolean := false
-	);
-	port(
-		clk: in std_logic;
-		reset: in std_logic;
-		ipbus_in: in ipb_wbus;
-		ipbus_out: out ipb_rbus;
-		d: in ipb_reg_v(N_STAT - 1 downto 0) := (others => (others => '0'));
-		q: out ipb_reg_v(N_CTRL - 1 downto 0);
-		qmask: in ipb_reg_v(N_CTRL - 1 downto 0) := (others => (others => '1'));		
-		stb: out std_logic_vector(N_CTRL - 1 downto 0)
-	);
-	
-end component;
 
     signal ctrl: ipb_reg_v(0 downto 0);
     signal stat: ipb_reg_v(15 downto 0);
@@ -101,7 +81,7 @@ begin
 
 -- Registers
 
-    csr: ipbus_ctrlreg_v   -- changed to componet Jacques
+    csr: entity work.ipbus_ctrlreg_v
         generic map(
             N_CTRL => 1,
             N_STAT => 16
@@ -370,8 +350,7 @@ begin
                     vctr <= (others => '0');
                     tctr <= (others => '0');
                 else
-                    --vctr <= (rx_ctr'length - 1 downto 0 => rx_ctr, others => '0');
-                    vctr(rx_ctr'length - 1 downto 0) <=rx_ctr; -- (rx_ctr'length - 1 downto 0 => rx_ctr, others => '0');  Jacques
+                    vctr <= (rx_ctr'length - 1 downto 0 => rx_ctr, others => '0');
                     tctr <= to_unsigned(1, tctr'length);
                 end if;
                 

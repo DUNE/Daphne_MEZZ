@@ -8,7 +8,6 @@ use ieee.numeric_std.all;
 
 library crc_lib;
 use work.crc32_64_pkg.all;
---use crc_lib.crc32_64_pkg.all; changed to the above line Jacques
 
 entity crc32_8_wrapper is
     generic(
@@ -25,16 +24,6 @@ entity crc32_8_wrapper is
 end entity crc32_8_wrapper;
 
 architecture behavioral of crc32_8_wrapper is
-
-    component crc32_8_bytewise_lut_python is    -- declared this componet Jacques
-    generic(
-        G_NOF_LUTS : integer := 1
-    );
-    port(
-        data_in : in  std_logic_vector(G_NOF_LUTS * 8 - 1 downto 0);
-        crc_out : out std_logic_vector(31 downto 0)
-    );
-    end component crc32_8_bytewise_lut_python;
     -- Signal Declarations
     signal data_r    : std_logic_vector(LL_WIDTH - 1 downto 0) := (others => '0');
     signal enable_r  : std_logic                               := '0';
@@ -46,7 +35,7 @@ architecture behavioral of crc32_8_wrapper is
 
 begin
 
-    crc_lut_based_8_inst : crc32_8_bytewise_lut_python  -- made a change here and took out the entity   Jacques
+    crc_lut_based_8_inst : entity work.crc32_8_bytewise_lut_python
         generic map(
             G_NOF_LUTS => LL_WIDTH / 8
         )

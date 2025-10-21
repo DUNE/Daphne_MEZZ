@@ -30,16 +30,6 @@ entity ipb_rsts is
 end ipb_rsts;
 
 architecture rtl of ipb_rsts is
-component  ipbus_clock_div is    -- declared this component Jacques
-	port(
-		clk: in std_logic;
-		d7 : out std_logic;
-		d17: out std_logic;
-		d25: out std_logic;
-		d28: out std_logic
-	);
-
-end component ;
     
     signal sysclk, clk_ipb_i: std_logic;
     signal d17, d17_d: std_logic;
@@ -52,7 +42,7 @@ begin
     sysclk <= clki_fr;
     clk_ipb_i <= clki_fr;
     
-    clkdiv: ipbus_clock_div    -- changed this to a component
+    clkdiv: entity work.ipbus_clock_div
         port map(
             clk => sysclk,
             d17 => d17

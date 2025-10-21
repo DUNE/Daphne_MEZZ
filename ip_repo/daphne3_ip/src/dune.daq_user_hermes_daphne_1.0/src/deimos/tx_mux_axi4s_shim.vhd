@@ -27,8 +27,7 @@ architecture rtl of tx_mux_axi4s_shim is
 
 begin
 
-    --axi4s_mosi.tdata <= (63 downto 0 => mux_d.d, others => '0');
-    axi4s_mosi.tdata(63 downto 0) <=  mux_d.d;--Jacqus
+    axi4s_mosi.tdata <= (63 downto 0 => mux_d.d, others => '0');
     axi4s_mosi.tid <= (others => '0');
     axi4s_mosi.tuser <= (others => '0');
     axi4s_mosi.tkeep <= (others => mux_d.valid);

@@ -33,7 +33,7 @@ architecture pdts_endpoint_wrapper_arch of pdts_endpoint_wrapper is
 
 component pdts_endpoint is
 	generic(
-		SCLK_FREQ: real := 50.0; -- Frequency (MHz) of the system clock
+		SCLK_FREQ: real := 99.999; -- Frequency (MHz) of the system clock
 		USE_EXT_PLL: boolean := false; -- Use external PLL or clock source
 		EXT_PLL_DIV: positive := 2; -- External PLL division ratio
 		FORCE_TX: boolean := false; -- Turn on transmit permanently
@@ -72,11 +72,11 @@ begin
 
 pdts_endpoint_inst: pdts_endpoint
 	generic map(
-		SCLK_FREQ => 100.0, -- Frequency (MHz) of the system clock
+		SCLK_FREQ => 99.999, -- Frequency (MHz) of the system clock
 		USE_EXT_PLL => false, -- Use external PLL or clock source
 		--EXT_PLL_DIV => 2. -- External PLL division ratio, not used
 		FORCE_TX => false, -- Turn on transmit permanently, don't do this....!
-		SKIP_FREQ => true, -- Skip the frequency check step (e.g. for simulation)
+		SKIP_FREQ => false, -- Skip the frequency check step (e.g. for simulation)
 		EXT_ADDR => true, -- Skip the address setting step
 		SKIP_DESKEW => false, -- Skip the phase adjustment step
 		SKIP_TSTAMP => false )

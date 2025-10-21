@@ -51,7 +51,7 @@ port(
     clock:   in  std_logic; -- 62.5MHz master clock
     dout:    out array_5x9x16_type; -- data synchronized to clock
     trig:    out std_logic; -- user generated trigger
-
+    trig_IN: IN std_logic ;
     -- AXI-Lite interface:
 
     S_AXI_ACLK: in std_logic;
@@ -127,7 +127,7 @@ architecture fe_arch of front_end is
         S_AXI_RRESP	: out std_logic_vector(1 downto 0);
         S_AXI_RVALID	: out std_logic;
         S_AXI_RREADY	: in std_logic;        
-        
+        trig_IN: IN std_logic ;
         idelayctrl_ready: in std_logic;
         idelayctrl_reset: out std_logic;
         idelay_tap: out array_5x9_type;
@@ -227,7 +227,7 @@ begin
         S_AXI_RRESP => S_AXI_RRESP,
         S_AXI_RVALID => S_AXI_RVALID,
         S_AXI_RREADY => S_AXI_RREADY,
-        
+        trig_IN => trig_IN,
         idelayctrl_ready => idelayctrl_ready,
         idelayctrl_reset => idelayctrl_reset,
 

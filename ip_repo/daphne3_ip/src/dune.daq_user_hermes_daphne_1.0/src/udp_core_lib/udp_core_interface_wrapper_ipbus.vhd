@@ -125,255 +125,6 @@ end entity udp_core_interface_withmac_ipbus_wrapper;
 
 architecture wrapper of udp_core_interface_withmac_ipbus_wrapper is
 
-
-component  axi4s_fifo is
-     generic (
-          g_fpga_vendor        : string        := "xilinx";      --For xpm doesnt affect anything
-          g_fpga_family        : string        := "all";         --For xpm doesnt affect anything
-          g_implementation     : string        := "distributed"; --For xpm doesnt affect anything
-          g_dual_clock         : boolean       := true;
-          g_wr_adr_width       : integer       := 5;
-          g_prog_full_val      : positive      := 20;
-          g_sanity_check       : boolean       := true;  --TODO not implemented yet
-          g_in_endianess_swap  : boolean       := false; --TODO not implemented yet
-          g_out_endianess_swap : boolean       := false; --TODO not implemented yet
-          g_axi4s_descr        : t_axi4s_descr := (tdata_nof_bytes => 4,
-          tid_width                                                => 32,
-          tuser_width                                              => 32,
-          has_tlast                                                => 1,
-          has_tkeep                                                => 1,
-          has_tid                                                  => 0,
-          has_tuser                                                => 0);
-          g_in_tdata_nof_bytes       : integer := 4;
-          g_out_tdata_nof_bytes      : integer := 4;
-          g_bram_partition_width     : integer := 0;    --TODO not implemented yet
-          g_hold_last_read           : boolean := true; --TODO not implemented yet
-          g_full_packet              : boolean := false;
-          g_packet_fifo_wr_adr_width : integer := 4 --TODO not implemented yet
-     );
-     port (
-          s_axi_clk    : in std_logic;
-          s_axi_rst_n  : in std_logic;
-          m_axi_clk    : in std_logic;
-          m_axi_rst_n  : in std_logic;
-          axi4s_s_mosi : in t_axi4s_mosi;
-          axi4s_s_miso : out t_axi4s_miso;
-          axi4s_m_mosi : out t_axi4s_mosi;
-          axi4s_m_miso : in t_axi4s_miso
-     );
-end component;
-
-component udp_core_xml_mm_scalable_top is
-    generic(
-        G_FPGA_VENDOR         : string  := "xilinx"; --! Selects the FPGA Vendor for Compilation
-        G_FPGA_FAMILY         : string  := "all"; --! Selects the FPGA Family for Compilation
-        G_FIFO_IMPLEMENTATION : string  := "auto"; --! Selects how the Fitter implements the FIFO Memory
-        G_FIFO_TYPE           : string  := "inferred_mem"; --! Selects how to implement the Core's FIFOs
-        G_UDP_CORE_BYTES      : integer := 8; --! Width of Data Bus In Bytes
-        G_NUM_OF_ARP_POS      : natural := 8; --! Number Of Positions In ARP Table
-        G_TX_BACKPRESSURE     : boolean := false; --! Whether Tx Path needs to respond to backpressure
-        G_TX_EXT_IP_FIFO_CAP  : integer := (64 * 4); --! Capacity In Bytes Of Uns IPV4 Protocol Packets FIFOs in Tx Path
-        G_TX_EXT_ETH_FIFO_CAP : integer := (64 * 4); --! Capacity In Bytes Of Uns Ethernet Type Packets FIFOs in Tx Path
-        G_TX_OUT_FIFO_CAP     : integer := (8 * 64 * 32); --! Capicity Of FIFO at End Of Tx Path. Necessary For 100GbE But Less Important For 1/10GbE. Can Be Set to 0.
-        G_RX_IN_FIFO_CAP      : integer := (8 * 64 * 64); --! Capacity Of FIFO at Start Of Rx Path. At least 16 Words Recommended.
-        G_CORE_FREQ_KHZ       : integer := 156250; --! KHz Of Tx Path, Used For ARP Refresh Timers, Not Essential
-        G_INC_RX_PATH         : boolean := true;
-        G_INC_PING            : boolean := true; --! Generate Logic For Internal Ping Replies
-        G_INC_ARP             : boolean := true; --! Generate Logic For Interal ARP Requests And Replies
-        G_INC_LUTS            : boolean := true;
-        G_INC_ETH             : boolean := false; --! Generate Logic To Transmit Externally Provided Ethernet Payloads
-        G_INC_IPV4            : boolean := false; --! Generate Logic To Transmit Externally Provided IPV4 Payloads
-        debug_arp             : boolean := false;
-        debug_ping            : boolean := false
-    );
-    port(
-        -- udp core settings
-        udp_core_settings_status_regs  : out t_udp_core_settings;
-        udp_core_settings_control_regs : in  t_udp_core_settings;
-        -- arp mode control
-        arp_mode_status_regs           : out t_arp_mode_control;
-        arp_mode_control_regs          : in  t_arp_mode_control;
-        -- farm mode lut
-        farm_mode_lut_status           : out t_farm_mode_lut_in;
-        farm_mode_lut_control          : in  t_farm_mode_lut_out;
-        -- Main Core Clocks and Synchronised Resets
-        tx_core_clk                    : in  std_logic; --! UDP Core Tx Path Clock
-        rx_core_clk                    : in  std_logic; --! UDP Core Rx Path Clock
-        tx_core_rst_s_n                : in  std_logic; --! UDP Core Tx Synchronous Active-High Reset
-        rx_core_rst_s_n                : in  std_logic; --! UDP Core Rx Synchronous Active-High Reset
-
-        -- Packet Axi4s Interfaces
-        rx_axi4s_s_aclk                : in  std_logic; --! Rx PHY Axi4s Clk
-        rx_axi4s_s_areset_n            : in  std_logic; --! Rx PHY Axi4s Reset
-        rx_in_axi4s_s_mosi             : in  t_axi4s_mosi; --! Rx Data In
-        rx_in_axi4s_s_miso             : out t_axi4s_miso; --! Rx Backpressure
-        tx_axi4s_m_aclk                : in  std_logic; --! Tx PHY Axi4s Clk
-        tx_axi4s_m_areset_n            : in  std_logic; --! Tx PHY Axi4s Reset
-        tx_out_axi4s_m_mosi            : out t_axi4s_mosi; --! Tx Data Out
-        tx_out_axi4s_m_miso            : in  t_axi4s_miso; --! Tx Backpressure
-
-        -- UDP Axi4s Interfaces
-        udp_axi4s_s_mosi               : in  t_axi4s_mosi; --! UDP Tx In Data
-        udp_axi4s_s_miso               : out t_axi4s_miso; --! UDP Tx In Backpressure
-        udp_axi4s_m_miso               : in  t_axi4s_miso; --! UDP Rx Out Backpressure
-        udp_axi4s_m_mosi               : out t_axi4s_mosi; --! UDP Rx Out Data
-
-        --Optional IPV4 Axi4s Interfaces
-        ipv4_axi4s_s_aclk              : in  std_logic                     := '0'; --! Uns IPV4 Packet Tx In Clk
-        ipv4_axi4s_s_areset_n          : in  std_logic                     := '0'; --! Uns IPV4 Packet Tx In Reset
-        ipv4_axi4s_s_mosi              : in  t_axi4s_mosi                  := c_axi4s_mosi_default; --! Uns IPV4 Packet Tx In Data
-        ipv4_axi4s_s_miso              : out t_axi4s_miso; --! Uns IPV4 Packet Tx In Backpressure
-        ipv4_axi4s_m_miso              : in  t_axi4s_miso                  := c_axi4s_miso_default; --! Uns IPV4 Packet Rx Out Backpressure
-        ipv4_axi4s_m_mosi              : out t_axi4s_mosi; --! Uns IPV4 Packet Rx Out Data
-
-        --Optional Eth Axi4s Interfaces
-        eth_axi4s_s_aclk               : in  std_logic                     := '0'; --! Uns Ethernet Packet Tx In Clk
-        eth_axi4s_s_areset_n           : in  std_logic                     := '0'; --! Uns Ethernet Packet Tx In Reset
-        eth_axi4s_s_mosi               : in  t_axi4s_mosi                  := c_axi4s_mosi_default; --! Uns Ethernet Packet Tx In Data
-        eth_axi4s_s_miso               : out t_axi4s_miso; --! Uns Ethernet Packet Tx In Backpressure
-        eth_axi4s_m_miso               : in  t_axi4s_miso                  := c_axi4s_miso_default; --! Uns Ethernet Packet Rx Out Backpressure
-        eth_axi4s_m_mosi               : out t_axi4s_mosi; --! Uns Ethernet Packet Rx Out Data
-
-        --Optional External Network Address Assingment Ports
-        ext_mac_addr                   : in  std_logic_vector(47 downto 0) := (others => 'X'); --! Optional SRC Mac Address For The Core To Be Set At Board Level
-        ext_ip_addr                    : in  std_logic_vector(31 downto 0) := (others => 'X'); --! Optional SRC IP Address For The Core To Be Set At Board Level
-        ext_port_addr                  : in  std_logic_vector(15 downto 0) := (others => 'X'); --! Optional DESTINATION PORT ADDRESS (Not SRC like the preceeding two)
-        use_ext_addr                   : in  std_logic                     := 'X' --! Use Optional External MAC & IP Addresses
-
-    );
-end component;
-
-
-component udp_axi4s_pipe is
-    generic(
-        G_STAGES       : integer := 1;      --! Pipeline stages to generate
-        G_BACKPRESSURE : boolean := true    --! Whether downstream tready signals can be ignored
-    );
-    port(
-        axi_clk      : in  std_logic;       --! Clk
-        axi_rst_n    : in  std_logic;       --! Active Low Synchronous Reset
-        axi4s_s_mosi : in  t_axi4s_mosi;    --! Input Axi4s
-        axi4s_s_miso : out t_axi4s_miso;    --! Input Backpressure
-        axi4s_m_mosi : out t_axi4s_mosi;    --! Output Axi4s
-        axi4s_m_miso : in  t_axi4s_miso     --! Output Backpressure
-    );
-end component;
-
-component rx_frame_sync_align is
-    generic(
-        G_UDP_CORE_BYTES    : integer := 8                                              --! Width of Data Bus In Bytes
-    );
-    port(
-        udp_core_clk        : in  std_logic;                                            --! Clk
-        udp_core_rst_s_n    : in  std_logic;                                            --! Active Low synchronous Reset
-        xgmii_rx_d          : in  std_logic_vector(G_UDP_CORE_BYTES * 8 - 1 downto 0);  --! XGMII Input Data Bus
-        xgmii_rx_c          : in  std_logic_vector(G_UDP_CORE_BYTES - 1 downto 0);      --! XGMII Input Control Bus
-        axi4s_out_miso      : in  t_axi4s_miso := c_axi4s_miso_default;                 --! Axi4s Output Backpressure, currently unused
-        axi4s_out_mosi      : out t_axi4s_mosi                                          --! Axi4s Aligned Data Out
-    );
-end component;
-
-component rx_frame_sync_align_small is
-    generic(
-        G_UDP_CORE_BYTES    : integer := 1                                              --! Width of Data Bus In Bytes
-    );
-    port(
-        udp_core_clk        : in  std_logic;                                            --! Clk
-        udp_core_rst_s_n    : in  std_logic;                                            --! Active Low synchronous Reset
-        xgmii_rx_d          : in  std_logic_vector(G_UDP_CORE_BYTES * 8 - 1 downto 0);  --! MII Input Data Byte
-        xgmii_rx_c          : in  std_logic_vector(G_UDP_CORE_BYTES - 1 downto 0);      --! MII Input Control Bit
-        axi4s_out_miso      : in  t_axi4s_miso := c_axi4s_miso_default;                 --! Axi4s Output Backpressure, Currently Unused
-        axi4s_out_mosi      : out t_axi4s_mosi                                          --! Axi4s Data Out
-    );
-end component;
-
-component udp_axi4s_crc_remove is
-    generic(
-        G_UDP_CORE_BYTES    : natural := 8                      --! Width of Data Bus In Bytes
-    );
-    port(
-        clk                 : in  std_logic;                    --! Clk
-        rst_s_n             : in  std_logic;                    --! Active Low Reset
-        axi4s_in_mosi       : in  t_axi4s_mosi;                 --! Axi4s In With CRC Data
-        axi4s_in_miso       : out t_axi4s_miso;                 --! Axi4s In With CRC Backpressure
-        axi4s_out_mosi      : out t_axi4s_mosi;                 --! Axi4s Out Removed CRC Data
-        axi4s_out_miso      : in  t_axi4s_miso;                 --! Axi4s Out Removed CRC backpressure
-        crc                 : out std_logic_vector(31 downto 0) --! The Removed CRC
-    );
-end component;
-
-component tx_path_crc_mii is
-    generic(
-        G_UDP_CORE_BYTES    : natural := 8;             --! Width of Data Bus In Bytes
-        G_CRC_TYPE          : string  := "soft_crc_lut" --! Set CRC Type
-    );
-    port(
-        clk                 : in  std_logic;            --! Clk
-        rst_s_n             : in  std_logic;            --! Active Low Reset
-        axi4s_s_mosi        : in  t_axi4s_mosi;         --! Axi4s Ethernet Packets In
-        axi4s_m_mosi        : out t_axi4s_mosi          --! XGMII Ethernet Packets Out
-
-    );
-end component  ;
-
-
-component tx_path_8b10b_crc_mii is
-    port(
-        clk             : in  std_logic;                    --! Clk
-        rst_s_n         : in  std_logic;                    --! Active Low synchronous Reset
-        axi4s_s_mosi    : in  t_axi4s_mosi;                 --! Axi4s ethernet Packets In
-        data_out        : out std_logic_vector(7 downto 0); --! Data Bus Out
-        ctrl_out        : out std_logic;                    --! Control character out
-        last_out        : out std_logic;                    --! Last out, unused
-        valid_out       : out std_logic                     --! Valid out, unused
-    );
-end component  ;
-
-component reset_sync is
-    generic(
-        g_rst_extend            : boolean := false;     --! Delay the reset deassertion
-        g_rst_extend_msb        : natural := 20         --! A counter is used to delay the deassertion until the counter MSB is asserted
-    );
-    port(
-        clk                     : in    std_logic;
-        reset_n                 : in    std_logic;
-        synced_reset            : out   std_logic;
-        synced_reset_n          : out   std_logic
-    );
-end component  ;
-
-component udp_core_ipb_reg_bank is
-    generic(
-        G_INC_LUTS : boolean := true;
-        N_ARP_CTRL_REG  : natural := 1;
-        N_POS_ACT_REG   : natural := 8;
-        N_NZ_REG        : natural := 1;
-        N_ARP_ENTRY_REG : natural := 256;
-
-        ADDR_WIDTH      : positive := 8;
-        DATA_WIDTH      : positive := 32;
-        LATENCY         : integer range 1 to 2 := 1;
-        USER_LATENCY    : integer range 1 to 2 := 1
-    );
-    port(
-        clk       : in  std_logic;
-        rst       : in  std_logic;
-        ipb_in    : in  ipb_wbus;
-        ipb_out   : out ipb_rbus;
-        -- output records for control signals
-        -- udp core settings
-        extern_src_addr_in      : in t_extern_src_addr;
-        udp_core_settings_in    : in t_udp_core_settings;
-        udp_core_settings_out   : out t_udp_core_settings;
-        -- arp mode control
-        arp_mode_control_in     : in t_arp_mode_control;
-        arp_mode_control_out    : out t_arp_mode_control;
-        -- lut farm control
-        farm_mode_lut_in        : in t_farm_mode_lut_in;
-        farm_mode_lut_out       : out t_farm_mode_lut_out
-    );
-end component;
-
     ----------------------------------------------------------------------------
     -- Constants:
     ----------------------------------------------------------------------------
@@ -500,7 +251,7 @@ begin
     -- UDP Generate I/O Clk Crossing FIFOs If Generic Set, Else Straight Assign
     ----------------------------------------------------------------------------
     gen_udp_clk_fifos : if G_UDP_CLK_FIFOS generate
-        udp_in_fifo_inst : axi4s_fifo
+        udp_in_fifo_inst : entity work.axi4s_fifo
             generic map(
                 g_fpga_vendor         => G_FPGA_VENDOR,
                 g_fpga_family         => G_FPGA_FAMILY,
@@ -523,7 +274,7 @@ begin
                 axi4s_m_miso => udp_axi4s_tx_s_miso
             );
 
-        udp_out_fifo_inst : axi4s_fifo
+        udp_out_fifo_inst : entity work.axi4s_fifo
             generic map(
                 g_fpga_vendor         => G_FPGA_VENDOR,
                 g_fpga_family         => G_FPGA_FAMILY,
@@ -562,7 +313,7 @@ begin
 
     gen_ipv4_clk_fifos : if G_EXT_CLK_FIFOS and G_INC_IPV4 generate
 
-        ipv4_out_fifo_inst : axi4s_fifo
+        ipv4_out_fifo_inst : entity work.axi4s_fifo
             generic map(
                 g_fpga_vendor         => G_FPGA_VENDOR,
                 g_fpga_family         => G_FPGA_FAMILY,
@@ -598,7 +349,7 @@ begin
     eth_axi4s_s_miso    <= eth_axi4s_tx_s_miso;
 
     gen_eth_clk_fifos : if G_EXT_CLK_FIFOS and G_INC_ETH generate
-        eth_out_fifo_inst : axi4s_fifo
+        eth_out_fifo_inst : entity work.axi4s_fifo
             generic map(
                 g_fpga_vendor         => G_FPGA_VENDOR,
                 g_fpga_family         => G_FPGA_FAMILY,
@@ -629,7 +380,7 @@ begin
     ----------------------------------------------------------------------------
     -- UDP Core:
     ----------------------------------------------------------------------------
-    udp_core_top_xml_mm_inst : udp_core_xml_mm_scalable_top
+    udp_core_top_xml_mm_inst : entity work.udp_core_xml_mm_scalable_top
         generic map(
             G_TX_BACKPRESSURE     => C_AXI4S_PIPE_BACKPRESSURE,
             G_FPGA_VENDOR         => G_FPGA_VENDOR,
@@ -699,7 +450,7 @@ begin
     ----------------------------------------------------------------------------
     -- I/O Pipelines For Interface With PHY
     ----------------------------------------------------------------------------
-    rx_input_pipe : udp_axi4s_pipe
+    rx_input_pipe : entity work.udp_axi4s_pipe
         generic map(
             G_STAGES       => G_RX_INPUT_PIPE_STAGES,
             G_BACKPRESSURE => C_AXI4S_PIPE_BACKPRESSURE
@@ -713,7 +464,7 @@ begin
             axi4s_m_miso => rx_in_axi4s_reg_s_miso
         );
 
-    tx_output_pipe : udp_axi4s_pipe
+    tx_output_pipe : entity work.udp_axi4s_pipe
         generic map(
             G_STAGES       => C_TX_OUTPUT_PIPE_STAGES,
             G_BACKPRESSURE => C_AXI4S_PIPE_BACKPRESSURE
@@ -733,7 +484,7 @@ begin
     gen_mac_functions : if G_INC_MAC_CRC and (G_UDP_CORE_BYTES /= 64) generate
         --Frame Sync Align X/GMII To Axi4s Interface for 1 & 10GbE--------------
         gen_frame_sync_aligner : if G_UDP_CORE_BYTES > 4 generate
-            scalable_frame_sync_align_inst : rx_frame_sync_align
+            scalable_frame_sync_align_inst : entity work.rx_frame_sync_align
                 generic map(
                     G_UDP_CORE_BYTES => G_UDP_CORE_BYTES
                 )
@@ -748,7 +499,7 @@ begin
         end generate gen_frame_sync_aligner;
 
         gen_1g_frame_aligner : if G_UDP_CORE_BYTES = 1 generate
-            scalable_frame_sync_align_inst :rx_frame_sync_align_small
+            scalable_frame_sync_align_inst : entity work.rx_frame_sync_align_small
                 generic map(
                     G_UDP_CORE_BYTES => G_UDP_CORE_BYTES
                 )
@@ -763,7 +514,7 @@ begin
         end generate gen_1g_frame_aligner;
 
         --Remove CRC From Incoming Ethernet Packets------------------
-        rx_remove_crc_inst : udp_axi4s_crc_remove
+        rx_remove_crc_inst : entity work.udp_axi4s_crc_remove
             generic map(
                 G_UDP_CORE_BYTES => G_UDP_CORE_BYTES
             )
@@ -779,7 +530,7 @@ begin
 
         --Calculate and Add CRC To Outgoing Tx Ethernet Packets
         gen_tx_10g_crc : if G_UDP_CORE_BYTES /= 1 generate
-            tx_add_crc_inst : tx_path_crc_mii
+            tx_add_crc_inst : entity work.tx_path_crc_mii
                 generic map(
                     G_UDP_CORE_BYTES => G_UDP_CORE_BYTES,
                     G_CRC_TYPE       => "soft_crc_lut"
@@ -793,7 +544,7 @@ begin
         end generate gen_tx_10g_crc;
 
         gen_tx_1g_crc : if G_UDP_CORE_BYTES = 1 generate
-            tx_add_small_crc_inst : tx_path_8b10b_crc_mii
+            tx_add_small_crc_inst : entity work.tx_path_8b10b_crc_mii
                 port map(
                     clk          => tx_axi4s_m_aclk,
                     rst_s_n      => tx_axi4s_rst_s_n,
@@ -816,7 +567,7 @@ begin
     ----------------------------------------------------------------------------
     -- Reset Logic: Sync Resets To Various Clks & Pipeline (Helps timing)
     ----------------------------------------------------------------------------
-    rx_rst_sync_core_clk_inst : reset_sync
+    rx_rst_sync_core_clk_inst : entity work.reset_sync
         port map(
             clk            => rx_core_clk,
             reset_n        => rx_axi4s_s_areset_n,
@@ -824,7 +575,7 @@ begin
             synced_reset_n => rx_core_int_rst_n
         );
 
-    rx_rst_sync_phy_clk_inst :  reset_sync
+    rx_rst_sync_phy_clk_inst : entity work.reset_sync
         port map(
             clk            => rx_axi4s_s_aclk,
             reset_n        => rx_axi4s_s_areset_n,
@@ -832,7 +583,7 @@ begin
             synced_reset_n => rx_axi4s_int_rst_n
         );
 
-    tx_rst_sync_core_clk_inst :  reset_sync
+    tx_rst_sync_core_clk_inst : entity work.reset_sync
         port map(
             clk            => tx_core_clk,
             reset_n        => tx_axi4s_m_areset_n,
@@ -840,7 +591,7 @@ begin
             synced_reset_n => tx_core_int_rst_n
         );
 
-    tx_rst_sync_phy_clk_inst :  reset_sync
+    tx_rst_sync_phy_clk_inst : entity work.reset_sync
         port map(
             clk            => tx_axi4s_m_aclk,
             reset_n        => tx_axi4s_m_areset_n,
@@ -893,7 +644,7 @@ begin
     ----------------------------------------------------------------------------
     --  Register Bank
     ----------------------------------------------------------------------------
-    ipb_reg_bank : udp_core_ipb_reg_bank
+    ipb_reg_bank : entity work.udp_core_ipb_reg_bank
         generic map(
             G_INC_LUTS  => G_INC_LUTS
         )

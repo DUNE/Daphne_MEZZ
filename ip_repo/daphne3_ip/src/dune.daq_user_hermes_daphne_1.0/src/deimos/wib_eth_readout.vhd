@@ -14,29 +14,23 @@ use work.ipbus_reg_types.all;
 
 use work.ipbus_decode_wib_eth_readout.all;
 
-
+use work.tx_mux_decl.all;
 
 library axi4_lib;
 use work.axi4s_pkg.all;
-use work.axi4_conversion_pkg.all;
 
 library deimos;
 use work.xgmii_pkg.all;
 use work.addr_pkg.all;
-use work.tx_mux_decl.all;
+
 use work.freq_pkg.all;
 use work.version_pkg.all;
 use work.hermes_core_version_pkg.all;
 
-library common_stfc_lib;
-use work.common_stfc_pkg.all;
-
-library udp_core_lib;
-
-entity wib_eth_readout is
+entity eth_readout is
     generic(
-        N_SRC: integer:= 4;
-        N_MGT: positive range 1 to 4 := 1;
+        N_SRC: positive;
+        N_MGT: positive;
         IN_BUF_DEPTH: natural;
         REF_FREQ: t_freq := f156_25
     );
@@ -45,123 +39,33 @@ entity wib_eth_readout is
         ipb_rst: in std_logic;
         ipb_in: in  ipb_wbus;
         ipb_out: out ipb_rbus;
+        nuke: out std_logic;
+        soft_rst: out std_logic;
         
         eth_rx_p: in std_logic_vector(N_MGT-1 downto 0); -- Ethernet rx from SFP
         eth_rx_n: in std_logic_vector(N_MGT-1 downto 0);
         eth_tx_p: out std_logic_vector(N_MGT-1 downto 0); -- Ethernet tx to SFP
         eth_tx_n: out std_logic_vector(N_MGT-1 downto 0);
         eth_tx_dis: out std_logic_vector(N_MGT-1 downto 0); -- SFP tx_disable
-        --eth_clk_in :   in std_logic ;
         eth_clk_p: in std_logic; -- Transceiver refclk
         eth_clk_n: in std_logic;
-        clk: in std_logic; -- DUNE base clock
-        rst: in std_logic; -- DUNE base clock sync reset
-        d: in array_of_src_d_arrays (N_MGT-1 downto 0)(N_SRC-1 downto 0); -- Data from sources 
-       
+        
+        dune_base_clk: in std_logic; -- DUNE base clock
+        dune_base_rst: in std_logic; -- DUNE base clock sync reset
         ts: in std_logic_vector(63 downto 0);
-        nuke: out std_logic;
-        soft_rst: out std_logic;
+        
+        data_clk: in std_logic; 
+        data_clk_rst: in std_logic; 
+        d: in array_of_src_d_arrays(N_MGT-1 downto 0)(N_SRC-1 downto 0); -- Data from sources
+        
         ext_mac_addr    : in mac_addr_array(N_MGT-1 downto 0);
         ext_ip_addr     : in ip_addr_array(N_MGT-1 downto 0);
         ext_port_addr   : in udp_port_array(N_MGT-1 downto 0)     
     );
 
-end entity wib_eth_readout;
+end entity eth_readout;
 
-architecture rtl of wib_eth_readout is
-
-
-
-
-
- component ultrascale_pcs_pma is
-      generic(
-        GT_LOOPBACK      : boolean := false;
-        ref_freq         : t_freq := f156_25;
-        N_MGT            : positive range 1 to 4 := 1;
-        N_CLK_DEBUG      : positive := 3
-      );
-      port(
-        eth_clk_p           : in  std_logic;
-        eth_clk_n           : in  std_logic;
-        --eth_clk : in std_logic ;
-        ipb_clk             : in  std_logic;
-        ipb_rst             : in  std_logic;
-        ipb_in              : in  ipb_wbus;
-        ipb_out             : out ipb_rbus;
-
-        clk_drp             : in  std_logic;
-
-        clk_156_o           : out std_logic_vector(N_MGT-1 downto 0);
-
-        sfp_rxp_array       : in  std_logic_vector(N_MGT-1 downto 0);
-        sfp_rxn_array       : in  std_logic_vector(N_MGT-1 downto 0);
-        sfp_txp_array       : out std_logic_vector(N_MGT-1 downto 0);
-        sfp_txn_array       : out std_logic_vector(N_MGT-1 downto 0);
-        sfp_tx_dis_array    : out std_logic_vector(N_MGT-1 downto 0);
-
-        tx_path_ready_array : out std_logic_vector(N_MGT-1 downto 0);
-        rst_156_25_array    : out std_logic_vector(N_MGT-1 downto 0);
-
-        xgmii_clk           : out std_logic;
-
-        tx_xgmii_d_array    : in xgmii_d_array(N_MGT-1 downto 0);
-        tx_xgmii_c_array    : in xgmii_c_array(N_MGT-1 downto 0);
-
-        rx_xgmii_d_array    : out xgmii_d_array(N_MGT-1 downto 0);
-        rx_xgmii_c_array    : out xgmii_c_array(N_MGT-1 downto 0)
-        
-      );
-end  component;
-
-
-component ipbus_ctrlreg_v is
-	generic(
-		N_CTRL: natural := 1;
-		N_STAT: natural := 1;
-		SWAP_ORDER: boolean := false
-	);
-	port(
-		clk: in std_logic;
-		reset: in std_logic;
-		ipbus_in: in ipb_wbus;
-		ipbus_out: out ipb_rbus;
-		d: in ipb_reg_v(N_STAT - 1 downto 0) := (others => (others => '0'));
-		q: out ipb_reg_v(N_CTRL - 1 downto 0);
-		qmask: in ipb_reg_v(N_CTRL - 1 downto 0) := (others => (others => '1'));		
-		stb: out std_logic_vector(N_CTRL - 1 downto 0)
-	);
-	
-end component;
-
-component ipbus_roreg_v is
-	generic(
-		N_REG: positive := 1;
-		DATA: std_logic_vector
-	);
-	port(
-		ipb_in: in ipb_wbus;
-		ipb_out: out ipb_rbus
-	);
-	
-end component;
-
-
-component ipbus_fabric_sel is
-  generic(
-    NSLV: positive;
-    STROBE_GAP: boolean := false;
-    SEL_WIDTH: natural
-   );
-  port(
-  	sel: in std_logic_vector(SEL_WIDTH - 1 downto 0);
-    ipb_in: in ipb_wbus;
-    ipb_out: out ipb_rbus;
-    ipb_to_slaves: out ipb_wbus_array(NSLV - 1 downto 0);
-    ipb_from_slaves: in ipb_rbus_array(NSLV - 1 downto 0) := (others => IPB_RBUS_NULL)
-   );
-
-end component;
+architecture rtl of eth_readout is
 
     signal ipbw: ipb_wbus_array(N_SLAVES - 1 downto 0);
     signal ipbr: ipb_rbus_array(N_SLAVES - 1 downto 0);
@@ -181,6 +85,7 @@ end component;
     signal ipbw_mux: ipb_wbus_array(N_MGT - 1 downto 0);
     signal ipbr_mux: ipb_rbus_array(N_MGT - 1 downto 0);
     signal samp, mark: std_logic;
+    signal ts_data_clk: std_logic_vector(63 downto 0);
     signal xgmii_clk : std_logic; 
     signal tx_xgmii_d_array, rx_xgmii_d_array : xgmii_d_array(N_MGT-1 downto 0);
     signal tx_xgmii_c_array, rx_xgmii_c_array : xgmii_c_array(N_MGT-1 downto 0);
@@ -192,7 +97,7 @@ begin
 
 -- ipbus address decoder
 
-    fabric: ipbus_fabric_sel
+    fabric: entity work.ipbus_fabric_sel
         generic map(
             NSLV => N_SLAVES,
             SEL_WIDTH => IPBUS_SEL_WIDTH
@@ -207,8 +112,8 @@ begin
 
 -- Multiplexer
     refclk_info <= X"1" when (REF_FREQ = f156_25) else
-                  X"2" when (REF_FREQ = f125)    else 
-                  X"0";
+                   X"2" when (REF_FREQ = f125)    else 
+                   X"0";
 
     info_vec <= 
         X"000" & refclk_info & std_logic_vector(to_unsigned(N_MGT, 8)) & std_logic_vector(to_unsigned(N_SRC, 8)) & -- generics
@@ -216,7 +121,7 @@ begin
         BOARD_DESIGN_ID & C_VERSION_HEX & -- version
         X"DEADBEEF"; -- magic
 
-    info :ipbus_roreg_v
+    info : entity work.ipbus_roreg_v
         generic map(
             N_REG => N_INFO_REG,
             DATA => info_vec
@@ -234,15 +139,17 @@ begin
             ipb_rst => ipb_rst,
             ipb_in => ipbw(N_SLV_SAMP),
             ipb_out => ipbr(N_SLV_SAMP),
-            src_clk => clk,
-            src_rst => rst,
-            ts => ts,
+            data_clk => data_clk,
+            dune_base_clk => dune_base_clk,
+            dune_base_rst => dune_base_rst,
+            ts_dune_clk => ts,
             samp => samp,
-            mark => mark
+            mark => mark,
+            ts_data_clk => ts_data_clk
         );
         
 -- CSR
-    csr: ipbus_ctrlreg_v
+    csr: entity work.ipbus_ctrlreg_v
         generic map(
             N_CTRL => 1,
             N_STAT => 0
@@ -271,11 +178,11 @@ begin
         ipb_in              => ipbw(N_SLV_TX_PATH),
         ipb_out             => ipbr(N_SLV_TX_PATH),
         ref_clk_156_in      => clk_156_o (0), --global_ref_clk_in,
-        dune_base_clk       => clk,
-        dune_rst            => rst,
-        ts => ts,
-        samp => samp,
-        mark => mark,
+        data_clk            => data_clk,
+        data_clk_rst        => data_clk_rst,
+        ts                  => ts_data_clk,
+        samp                => samp,
+        mark                => mark,
         xgmii_clk           => xgmii_clk,
         tx_xgmii_rst        => rst_156_25_array(0), --gttxreset_out,
         tx_xgmii_d_array    => tx_xgmii_d_array,
@@ -293,7 +200,7 @@ begin
         );
 
 
-    pcs_pma: ultrascale_pcs_pma
+    pcs_pma: entity work.ultrascale_pcs_pma
       Generic map(
         GT_LOOPBACK         =>  false,
         ref_freq            =>  REF_FREQ,
@@ -302,7 +209,7 @@ begin
       Port map(
         eth_clk_p => eth_clk_p,
         eth_clk_n => eth_clk_n,
-        --eth_clk => eth_clk_in,
+
         ipb_clk => ipb_clk,
         ipb_rst => ipb_rst,
         ipb_in => ipbw(N_SLV_PCS_PMA),

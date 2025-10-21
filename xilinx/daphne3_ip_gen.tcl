@@ -234,7 +234,7 @@ set xciDAQFiles_aux [get_files_recursive $rtlDAQDir "*.xci"]
 set xciDAQFiles [ignore_files $xciDAQFiles_aux "xxv_ethernet_0_gt.xci"]
 
 set vhdlFiles_aux [get_files_recursive $rtlDir "*.vhd"]
-set vhdlFiles [ignore_files $vhdlFiles_aux {"daphne3.vhd" "auto_afe.vhd" "auto_fsm.vhd" "i2cm.vhd" "spim_cm.vhd" "DAQ_CLOCKS.vhd" }]
+set vhdlFiles [ignore_files $vhdlFiles_aux {"daphne3.vhd" "auto_afe.vhd" "auto_fsm.vhd" "i2cm.vhd" "spim_cm.vhd" "DAQ_CLOCKS.vhd" "AXI_RAM.vhd" "dual_st20_top.vhd" "thresholds.vhd" "st40_top.vhd"}]
 set verilogFiles [get_files_recursive $rtlDir "*.v"]
 
 set tbFilesVhdl [get_files_recursive $tbDir "*.vhd"]
@@ -325,9 +325,21 @@ foreach verilogType $verilogFiles {
 
 # 10Gig Sender VHDL files
 foreach daqVhdlType $vhdlDAQFiles {
+    # # the hermes module libraries are a mess in this last update, we need to discuss it!
+    # # obtain the name of the library/folder where this file is located
+    # set fileLibrary [file tail [file dirname $daqVhdlType]]
+
+    # add the files to their respective file group
     set fileObjSynth [ipx::add_file -name $daqVhdlType -file_group $lang_synth]
     set fileObjSim [ipx::add_file -name $daqVhdlType -file_group $lang_sim]
-    
+
+    # # set the proper library for the file
+    # if {![string match "daphne_streaming_top.vhd" $daqVhdlType]} {
+    #     # change the library name to be different than the default library "work"
+    #     set_property LIBRARY_NAME $fileLibrary $fileObjSynth
+    #     set_property LIBRARY_NAME $fileLibrary $fileObjSim
+    # }   
+
     # obtain only the file name of the file that was added
     set fileName [file tail $daqVhdlType]
 
@@ -371,8 +383,20 @@ set daphne_ports [ipx::add_ports_from_hdl -top_level_hdl_file [file normalize ".
 
 # create the generic parameters of the design based on the TOP level generic
 set daphne_generics [ipx::add_model_parameters_from_hdl -top_level_hdl_file [file normalize "../ip_repo/daphne3_ip/rtl/daphne3.vhd"] -top_module_name DAPHNE3 -include_dirs [file normalize "../ip_repo/daphne3_ip/rtl"] $daphne]
-set_property DISPLAY_NAME Version [ipx::get_hdl_parameters -of_objects $daphne]
-set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne]
+set_property DISPLAY_NAME Version [ipx::get_hdl_parameters -of_objects $daphne version]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne version]
+set_property DISPLAY_NAME {Link ID} [ipx::get_hdl_parameters -of_objects $daphne link_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne link_id]
+set_property DISPLAY_NAME {Slot ID} [ipx::get_hdl_parameters -of_objects $daphne slot_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne slot_id]
+set_property DISPLAY_NAME {Crate ID} [ipx::get_hdl_parameters -of_objects $daphne crate_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne crate_id]
+set_property DISPLAY_NAME {Detector ID} [ipx::get_hdl_parameters -of_objects $daphne detector_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne detector_id]
+set_property DISPLAY_NAME Threshold [ipx::get_hdl_parameters -of_objects $daphne threshold]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne threshold]
+set_property DISPLAY_NAME {Version ID} [ipx::get_hdl_parameters -of_objects $daphne version_id]
+set_property VALUE_RESOLVE_TYPE user [ipx::get_hdl_parameters -of_objects $daphne version_id]
 
 set version_param [ipx::add_user_parameter version $daphne]
 set_property DISPLAY_NAME Version $version_param
@@ -382,14 +406,64 @@ set_property VALUE_FORMAT bitString $version_param
 set_property VALUE_RESOLVE_TYPE user $version_param
 set_property VALUE_PERMISSION user $version_param
 
+set link_id_param [ipx::add_user_parameter link_id $daphne]
+set_property DISPLAY_NAME {Link ID} $link_id_param
+set_property VALUE 000000 $link_id_param
+set_property VALUE_BIT_STRING_LENGTH 6 $link_id_param
+set_property VALUE_FORMAT bitString $link_id_param
+set_property VALUE_RESOLVE_TYPE user $link_id_param
+set_property VALUE_PERMISSION user $link_id_param
+
+set slot_id_param [ipx::add_user_parameter slot_id $daphne]
+set_property DISPLAY_NAME {Slot ID} $slot_id_param
+set_property VALUE 0010 $slot_id_param
+set_property VALUE_BIT_STRING_LENGTH 4 $slot_id_param
+set_property VALUE_FORMAT bitString $slot_id_param
+set_property VALUE_RESOLVE_TYPE user $slot_id_param
+set_property VALUE_PERMISSION user $slot_id_param
+
+set crate_id_param [ipx::add_user_parameter crate_id $daphne]
+set_property DISPLAY_NAME {Crate ID} $crate_id_param
+set_property VALUE 0000000011 $crate_id_param
+set_property VALUE_BIT_STRING_LENGTH 10 $crate_id_param
+set_property VALUE_FORMAT bitString $crate_id_param
+set_property VALUE_RESOLVE_TYPE user $crate_id_param
+set_property VALUE_PERMISSION user $crate_id_param
+
+set detector_id_param [ipx::add_user_parameter detector_id $daphne]
+set_property DISPLAY_NAME {Detector ID} $detector_id_param
+set_property VALUE 000010 $detector_id_param
+set_property VALUE_BIT_STRING_LENGTH 6 $detector_id_param
+set_property VALUE_FORMAT bitString $detector_id_param
+set_property VALUE_RESOLVE_TYPE user $detector_id_param
+set_property VALUE_PERMISSION user $detector_id_param
+
+set threshold_param [ipx::add_user_parameter threshold $daphne]
+set_property DISPLAY_NAME Threshold $threshold_param
+set_property VALUE 1000000000 $threshold_param
+set_property VALUE_BIT_STRING_LENGTH 10 $threshold_param
+set_property VALUE_FORMAT bitString $threshold_param
+set_property VALUE_RESOLVE_TYPE user $threshold_param
+set_property VALUE_PERMISSION user $threshold_param
+
+set version_id_param [ipx::add_user_parameter version_id $daphne]
+set_property DISPLAY_NAME {Version ID} $version_id_param
+set_property VALUE 000001 $version_id_param
+set_property VALUE_BIT_STRING_LENGTH 6 $version_id_param
+set_property VALUE_FORMAT bitString $version_id_param
+set_property VALUE_RESOLVE_TYPE user $version_id_param
+set_property VALUE_PERMISSION user $version_id_param
+
 # list all the bus names used in the core
 set daphne_bus_interfaces {
     AFE_SPI_S_AXI
     END_P_S_AXI
     FRONT_END_S_AXI
+    OUTBUFF_S_AXI
     SPI_DAC_S_AXI
     SPY_BUF_S_S_AXI
     STUFF_S_AXI
+    THRESH_S_AXI
     TRIRG_S_AXI
 }
 
@@ -494,6 +568,7 @@ set daphne_pl_clk_interfaces {
     afe_clk_p
     eth_clk_n
     eth_clk_p
+    out_buff_clk
 }
 
 # list all possible parameters for the daphne PL clock interfaces
@@ -685,7 +760,7 @@ foreach plClkInterface $daphne_pl_clk_interfaces {
     set_property PHYSICAL_NAME $plClkInterface $pl_clk_pm
 
     # set proper direction of interface for output ports
-    if {[string match "afe_clk_*" $plClkInterface]} {
+    if {[string match "afe_clk_*" $plClkInterface] || [string match "out_buff_clk" $plClkInterface]} {
         set_property INTERFACE_MODE master $plClkInFace
     }
 

@@ -14,7 +14,7 @@ use work.pdts_clock_defs.all;
 
 entity pdts_ep_core is
 	generic(
-		SCLK_FREQ: real; -- Frequency (MHz) of the system clock
+		SCLK_FREQ: real:=99.999; -- Frequency (MHz) of the system clock
 		FORCE_TX: boolean := false; -- Turn on transmit permanently
 		SKIP_FREQ: boolean := false; -- Skip the frequency check step (e.g. for simulation)
 		EXT_ADDR: boolean := true; -- Skip the address setting step

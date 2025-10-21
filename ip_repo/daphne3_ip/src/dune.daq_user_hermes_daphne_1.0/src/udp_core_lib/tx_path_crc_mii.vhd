@@ -47,37 +47,6 @@ entity tx_path_crc_mii is
 end entity tx_path_crc_mii;
 
 architecture behavioural of tx_path_crc_mii is
-
-
-component  crc32_64 is
-    generic(
-        INIT     : std_logic_vector(31 downto 0) := X"FFFFFFFF";
-        LL_WIDTH : integer                       := 64
-    );
-    port(
-        clk     : in  std_logic;
-        rst_s_n : in  std_logic;
-        width   : in  std_logic_vector(5 downto 0);
-        enable  : in  std_logic;
-        data    : in  std_logic_vector(LL_WIDTH - 1 downto 0);
-        crc     : out std_logic_vector(31 downto 0)
-    );
-end component  ;
-
-component crc32_n_lut_based is
-    generic(
-        INIT     : std_logic_vector(31 downto 0) := X"FFFFFFFF";
-        LL_WIDTH : integer                       := 64
-    );
-    port(
-        clk     : in  std_logic;
-        rst_s_n : in  std_logic;
-        width   : in  std_logic_vector(5 downto 0);
-        enable  : in  std_logic;
-        data    : in  std_logic_vector(LL_WIDTH - 1 downto 0);
-        crc     : out std_logic_vector(31 downto 0)
-    );
-end component  ;
     --------------------------------------------------------------------------------
     -- Constants for Calculating Boundary Positions and to construct and index "trailer" Words:
     --------------------------------------------------------------------------------
@@ -294,7 +263,7 @@ begin
     soft_crc_gen : if (G_CRC_TYPE = "soft_crc") generate
     begin
         -- Soft CRC64  instantiation
-        crc2 : crc32_64
+        crc2 : entity work.crc32_64
             generic map(
                 INIT     => C_CRC_INIT_WORD,
                 LL_WIDTH => G_UDP_CORE_BYTES * 8
@@ -311,7 +280,7 @@ begin
 
     crc_lut_gen : if (G_CRC_TYPE = "soft_crc_lut") generate
     begin
-        crc3_inst : crc32_n_lut_based
+        crc3_inst : entity work.crc32_n_lut_based
             generic map(
                 INIT     => C_CRC_INIT_WORD,
                 LL_WIDTH => G_UDP_CORE_BYTES * 8

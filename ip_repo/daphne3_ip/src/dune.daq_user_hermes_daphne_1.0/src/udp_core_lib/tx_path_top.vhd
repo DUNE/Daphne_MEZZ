@@ -106,285 +106,13 @@ end entity tx_path_top;
 
 architecture behavioral of tx_path_top is
 
-
-component  tx_path_lut_mode_poller is
-    port (
-        clk                   : in std_logic; --! Tx Path Clk
-        farm_mode_lut_status  : out t_farm_mode_lut_in;
-        farm_mode_lut_control : in t_farm_mode_lut_out;
-        header_lut_addr       : in std_logic_vector(7 downto 0);   --! Header Constructor Access LUT Address
-        arp_lut_addr          : in std_logic_vector(7 downto 0);   --! ARP Handler Access LUT Address
-        arp_read_data         : in std_logic;                      --! ARP Handler Read Request
-        arp_write_data        : in std_logic;                      --! ARP Handler Write Request
-        current_pos           : out std_logic_vector(7 downto 0);  --! Current Position Of LUT Output Addresses
-        lower_mac_addr_in     : in std_logic_vector(31 downto 0);  --! Lower MAC Address Write
-        upper_mac_addr_in     : in std_logic_vector(15 downto 0);  --! Upper MAC Address Write
-        mac_addr_out          : out std_logic_vector(47 downto 0); --! MAC Address Out
-        ip_addr_out           : out std_logic_vector(31 downto 0); --! IP Address Out
-        port_out              : out std_logic_vector(31 downto 0)  --! Port Address Out
-
-    );
-end component  ;
-
-component tx_header_constructor is
-    generic(
-        G_UDP_CORE_BYTES        : natural := 8
-    );
-    port(
-        clk                     : in  std_logic;                        --! Clk
-        rst_s_n                 : in  std_logic;                        --! Active Low synchronous Reset
-        tx_type                 : in  std_logic_vector(3 downto 0);     --! Type Of Packet
-        arbitrator_rdy          : in  std_logic;                        --! Start Input Signal
-        dst_mac_addr            : in  std_logic_vector(47 downto 0);    --! Dst Mac Addr Of Core
-        src_mac_addr            : in  std_logic_vector(47 downto 0);    --! Src Mac Addr Of Core
-        dst_ip_addr             : in  std_logic_vector(31 downto 0);    --! Dst IP Addr Of Core
-        src_ip_addr             : in  std_logic_vector(31 downto 0);    --! Src IP Addr Of Core
-        dst_port_addr           : in  std_logic_vector(15 downto 0);    --! Dst Port Addr Of Core
-        src_port_addr           : in  std_logic_vector(15 downto 0);    --! Src Port Addr Of Core
-        ping_dst_mac_addr       : in  std_logic_vector(47 downto 0);    --! MAC Addr To Route Ping Replies To, passed from Tx Path via Ping handler
-        ping_ip_dst_addr        : in  std_logic_vector(31 downto 0);    --! IP Addr To Route Ping Replies To, passed from Tx Path via Ping handler
-        arp_dst_mac_addr        : in  std_logic_vector(47 downto 0);    --! MAC Addr To Route ARP Packets To, passed from ARP handler
-        lut_dst_mac_addr        : in  std_logic_vector(47 downto 0);    --! LUT Dst Mac Addr
-        lut_dst_ip_addr         : in  std_logic_vector(31 downto 0);    --! LUT Dst IP Addr
-        lut_dst_port_addr       : in  std_logic_vector(15 downto 0);    --! LUT Dst Port Addr
-        lut_mode                : in  std_logic;                        --! LUT Mode Enabled
-        lut_pos_from_data       : in  std_logic_vector(7 downto 0);     --! LUT Position To Retrieve Addresses From, Passed from UDP Handler
-        lut_pos_reading         : in  std_logic_vector(7 downto 0);     --! Position Of LUT Currently Valid
-        ip_length               : in  std_logic_vector(15 downto 0);    --! Length Of IPV4 For UDP
-        ip_ping_length          : in  std_logic_vector(15 downto 0);    --! Length Of IPV4 For Ping
-        udp_length              : in  std_logic_vector(15 downto 0);    --! Length of UDP Data
-        ext_ipv4_protocol       : in  std_logic_vector(7 downto 0);     --! Protocol For Ext IPV4 Packets
-        ext_ipv4_length         : in  std_logic_vector(15 downto 0);    --! Length For External IPV4 Packets
-        ext_eth_etype           : in  std_logic_vector(15 downto 0);    --! Etype For External Ethernet Packets
-        axi4s_header_out_mosi   : out t_axi4s_mosi;                     --! Axi4s Header Data Out
-        axi4s_header_out_miso   : in  t_axi4s_miso;                     --! Axi4s Header Backpressure - Unused
-        udp_preparing           : out std_logic;                        --! UDP Handler Can Accept New Data (As FIFO Will Be Emptying)
-        udp_start_data          : out std_logic;                        --! Start Signal To UDP Handler
-        arp_start_data          : out std_logic;                        --! Start Signal To Arp Handler
-        ping_start_data         : out std_logic;                        --! Start Signal To Ping Handler
-        ipv4_start_data         : out std_logic;                        --! Start Signal To IPV4 Handler
-        eth_start_data          : out std_logic;                        --! Start Signal To Ethernet Handler
-        packet_type             : in  std_logic_vector(15 downto 0);    --! Header Type To Construct
-        ip_ver_hdr_len          : in  std_logic_vector(7 downto 0);     --! IPV4 Header Fields
-        ip_service              : in  std_logic_vector(7 downto 0);     --! IPV4 Header Fields
-        ip_ident_count          : in  std_logic_vector(15 downto 0);    --! IPV4 Header Fields
-        ip_flag_frag             : in  std_logic_vector(15 downto 0);    --! IPV4 Header Fields
-        ip_time_to_live         : in  std_logic_vector(7 downto 0);     --! IPV4 Header Fields
-        ip_protocol             : in  std_logic_vector(7 downto 0)      --! IPV4 Header Fields
-    );
-end component  ;
-
-component udp_axi4s_pipe is
-    generic(
-        G_STAGES       : integer := 1;      --! Pipeline stages to generate
-        G_BACKPRESSURE : boolean := true    --! Whether downstream tready signals can be ignored
-    );
-    port(
-        axi_clk      : in  std_logic;       --! Clk
-        axi_rst_n    : in  std_logic;       --! Active Low Synchronous Reset
-        axi4s_s_mosi : in  t_axi4s_mosi;    --! Input Axi4s
-        axi4s_s_miso : out t_axi4s_miso;    --! Input Backpressure
-        axi4s_m_mosi : out t_axi4s_mosi;    --! Output Axi4s
-        axi4s_m_miso : in  t_axi4s_miso     --! Output Backpressure
-    );
-end component;
-
-component tx_udp_handler is
-    generic(
-        G_FPGA_VENDOR           : string  := "xilinx";                  --! Selects the FPGA Vendor for Compilation
-        G_FPGA_FAMILY           : string  := "all";                     --! Selects the FPGA Family for Compilation
-        G_FIFO_IMPLEMENTATION   : string  := "auto";                    --! Passed to FIFO Instantiation
-        G_UDP_CORE_BYTES        : natural := 8                          --! Width of Data Bus in bytes
-    );
-    port(
-        clk                     : in  std_logic;                        --! Clk
-        rst_s_n                 : in  std_logic;                        --! Active Low synchronous reset
-        axi4s_udp_s_mosi        : in  t_axi4s_mosi;                     --! UDP Payload In
-        axi4s_udp_s_miso        : out t_axi4s_miso;                     --! UDP Payload Backpressure
-        udp_rdy                 : out std_logic;                        --! UDP Ready Signal OutS
-        farm_mode_pos_out       : out std_logic_vector(7 downto 0);     --! LUT To route Packets to from TID sidechannel
-        udp_tuser_out           : out std_logic_vector(31 downto 0);    --! Tuser sidechannel, can be used to source Port addresses
-        udp_payload_mosi        : out t_axi4s_mosi;                     --! UDP Payload Out
-        pause_data              : in  std_logic;                        --! Pause FIFO output after the first word
-        udp_preparing           : in  std_logic;                        --! Header Constructor has started processing UDP Packet
-        udp_start               : in  std_logic;                        --! Start UDP Payload Output
-        ip_length               : out std_logic_vector(15 downto 0);    --! Calculated IP Length field
-        udp_length              : out std_logic_vector(15 downto 0)     --! Calculated UDP Length field
-    );
-end component;
-
-component tx_ping_handler is
-    generic(
-        G_FPGA_VENDOR           : string  := "xilinx";                      --! Selects the FPGA Vendor for Compilation
-        G_FPGA_FAMILY           : string  := "all";                         --! Selects the FPGA Family for Compilation
-        G_FIFO_IMPLEMENTATION   : string  := "auto";                        --! Selects how the Fitter implements the FIFO Memory
-        G_UDP_CORE_BYTES        : natural := 8                              --! Width Of Data Busses In Bytes
-    );
-    port(
-        clk                     : in  std_logic;                            --! Tx Path Clock
-        rst_s_n                 : in  std_logic;                            --! synchronous Active Low reset
-        tx_ping_s_mosi          : in  t_axi4s_mosi;                         --! Ping data from Rx Path via FIFO
-        tx_ping_s_miso          : out t_axi4s_miso;                         --! Ready to Ping Data FIFO
-        tx_ping_addr_mosi       : in  t_axi4s_mosi;                         --! Ping Routing Addr from Rx PAth via FIFO
-        tx_ping_addr_miso       : out t_axi4s_miso;                         --! Ready to Ping Routing Addr
-        ping_rdy                : out std_logic;                            --! Ping Packet Is Ready To Send
-        ping_done               : out std_logic;                            --! Ping Packet Has Finished Sending
-        ping_start              : in  std_logic;                            --! Go Ahead Signal for Queued Ping Packet
-        ping_dst_mac_out        : out std_logic_vector(6 * 8 - 1 downto 0); --! MAC Address For Header Constructor To Construct Replies To
-        ping_dst_ip_out         : out std_logic_vector(4 * 8 - 1 downto 0); --! IP Address For Header Constructor To Construct Replies To
-        tx_ping_m_mosi          : out t_axi4s_mosi;                         --! Ping Reply
-        tx_ping_m_miso          : in  t_axi4s_miso;                         --! Ping Reply Ready - Unused
-        ip_length               : out std_logic_vector(15 downto 0)         --! Length of Pings IPV4 Packet for Heady Constructor
-    );
-end component  ;
-
-
-component tx_arp_handler is
-    generic (
-        G_FPGA_VENDOR         : string  := "xilinx"; --! Selects the FPGA Vendor for Compilation
-        G_FPGA_FAMILY         : string  := "all";    --! Selects the FPGA Family for Compilation
-        G_FIFO_IMPLEMENTATION : string  := "auto";   --! Selects how the Fitter implements the FIFO Memory
-        G_UDP_CORE_BYTES      : natural := 8;        --! Width of the Data Bus in Bytes
-        G_NUM_OF_POS          : integer := 4;        --! Number Of ARP Positions In Use
-        G_CORE_FREQ_KHZ       : integer := 156250;   --! Used to Calibrate the Refresh Timers
-        debug_arp             : boolean := false
-    );
-    port (
-        clk                   : in std_logic;                             --! Main Tx Path Clk
-        rst_s_n               : in std_logic;                             --! Active Low synchronous Reset
-        tx_arp_s_mosi         : in t_axi4s_mosi;                          --! Axi4s ARP Data From Rx to Tx Path FIFO
-        tx_arp_s_miso         : out t_axi4s_miso;                         --! Axi4s ARP Backpressure To Rx to Tx Path FIFO
-        tx_arp_m_mosi         : out t_axi4s_mosi;                         --! Axi4s ARP Data Out To Tx
-        tx_arp_m_miso         : in t_axi4s_miso;                          --! Axi4s ARP Backpressure From Tx
-        arp_rdy               : out std_logic;                            --! ARP Packet Is Ready To Send
-        arp_done              : out std_logic;                            --! ARP Packet Has Finished
-        arp_start             : in std_logic;                             --! Signal From Arbitrator That Queued ARP Packet Can Start Sending
-        core_mac_addr         : in std_logic_vector(6 * 8 - 1 downto 0);  --! Core MAC Address, passed from Memory Map
-        core_ip_addr          : in std_logic_vector(4 * 8 - 1 downto 0);  --! Core IP Address, passed from Memory Map
-        lut_ip_addr           : in std_logic_vector(4 * 8 - 1 downto 0);  --! Read IP Address From LUT, Set In Control Plane 7 Used To Request MAC Addresses
-        mac_addr_out          : out std_logic_vector(6 * 8 - 1 downto 0); --! MAC Address to Header Constructor module for Layer 2 Header in Requests and Replies
-        arp_mode_status_regs  : out t_arp_mode_control;
-        arp_mode_control_regs : in t_arp_mode_control;
-        arp_lut_addr          : out std_logic_vector(7 downto 0);  --! Position in LUT
-        arp_read_lut          : out std_logic;                     --! Start LUT Read
-        arp_write_lut         : out std_logic;                     --! Start LUT Write
-        lower_mac_addr_wr     : out std_logic_vector(31 downto 0); --! Lower MAC Address To Write To LUT, split up due to 32 bit size of MM reg
-        upper_mac_addr_wr     : out std_logic_vector(15 downto 0)  --! Upper MAC Address To Write To LUT, split up due to 32 bit size of MM reg
-
-    );
-end component  ;
-
-component tx_pass_in_handler is
-    generic(
-        G_FPGA_VENDOR           : string  := "xilinx";                              --! Selects the FPGA Vendor for Compilation
-        G_FPGA_FAMILY           : string  := "all";                                 --! Selects the FPGA Family for Compilation
-        G_FIFO_IMPLEMENTATION   : string  := "auto";                                --! Selects how the Fitter implements the FIFO Memory
-        G_UDP_CORE_BYTES        : natural := 8;                                     --! Width Of Data Bus In Bytes
-        G_TUSER_WIDTH           : natural := 32;                                    --! TUSER Is Used To Pass Side Channel Data Depending On IPV4 Or Ethernet Packet (eg. Type, Length)
-        G_TID_WIDTH             : natural := 8;                                     --! TID
-        G_EXT_FIFO_CAP          : integer := (64 * 8)                               --! How much FIFO Space To Allocate TO Incoming Packets
-    );
-    port(
-        core_clk                : in  std_logic;                                    --! Tx Path Clk
-        core_rst_s_n            : in  std_logic;                                    --! Tx Path active low synchronous reset
-        payload_in_clk          : in  std_logic;                                    --! Data in Clk
-        payload_in_rst_n        : in  std_logic;                                    --! Data in active low synchronous reset
-        payload_in_axi4s_mosi   : in  t_axi4s_mosi;                                 --! Data in
-        payload_in_axi4s_miso   : out t_axi4s_miso;                                 --! Data in Backpressure
-        pass_in_rdy             : out std_logic;                                    --! Output ready Signal out
-        start_frame             : in  std_logic;                                    --! Start Output Signal in
-        pass_tid                : out std_logic_vector(G_TID_WIDTH - 1 downto 0);   --! Sidechannel TID Out
-        pass_tuser              : out std_logic_vector(G_TUSER_WIDTH - 1 downto 0); --! Sidechannel TUSER Out
-        payload_out_mosi        : out t_axi4s_mosi                                  --! Axi4s Packet Data Out
-    );
-end component  ;
-
-component tx_byte_slip is
-    generic(
-        G_FPGA_VENDOR           : string  := "xilinx";                                      --! Selects the FPGA Vendor for Compilation
-        G_FPGA_FAMILY           : string  := "all";                                         --! Selects the FPGA Family for Compilation
-        G_FIFO_IMPLEMENTATION   : string  := "auto";                                        --! Selects how the Fitter implements the FIFO Memory
-        G_UDP_CORE_BYTES        : natural := 8                                              --! Width of Data Bus In Bytes
-    );
-    port(
-        clk                     : in  std_logic;                                            --! Clk
-        rst_s_n                 : in  std_logic;                                            --! Active Low synchronous Reset
-        header_data             : in  std_logic_vector(G_UDP_CORE_BYTES * 8 - 1 downto 0);  --! Header Data From Header Constructor
-        header_last             : in  std_logic;                                            --! Tlast Flag Of Header Data
-        header_valid            : in  std_logic;                                            --! Tvalid Flag Of Header Data
-        payload_data            : in  std_logic_vector(G_UDP_CORE_BYTES * 8 - 1 downto 0);  --! Payload Data From One Of the Packet Handlers
-        payload_keep            : in  std_logic_vector(G_UDP_CORE_BYTES - 1 downto 0);      --! TKeep Of Payload, Identifies the Last Valid Byte
-        payload_last            : in  std_logic;                                            --! Tlast Flag of Payload Data
-        payload_valid           : in  std_logic;                                            --! Tvalid Flag of Payload Data
-        out_data                : out std_logic_vector(G_UDP_CORE_BYTES * 8 - 1 downto 0);  --! Slipped Full Packet Data
-        out_keep                : out std_logic_vector(G_UDP_CORE_BYTES - 1 downto 0);      --! Slipped Full Packet TKeep
-        out_last                : out std_logic;                                            --! Slipped Full Packet Tlast
-        out_valid               : out std_logic;                                            --! Slipped Full Packet Tvalid
-        type_frame              : in  std_logic_vector(3 downto 0)                          --! Type Frame Dictates How Many Bytes To Slip By
-    );
-end component  ;
-
-
-component axi4s_fifo is
-     generic (
-          g_fpga_vendor        : string        := "xilinx";      --For xpm doesnt affect anything
-          g_fpga_family        : string        := "all";         --For xpm doesnt affect anything
-          g_implementation     : string        := "distributed"; --For xpm doesnt affect anything
-          g_dual_clock         : boolean       := true;
-          g_wr_adr_width       : integer       := 5;
-          g_prog_full_val      : positive      := 20;
-          g_sanity_check       : boolean       := true;  --TODO not implemented yet
-          g_in_endianess_swap  : boolean       := false; --TODO not implemented yet
-          g_out_endianess_swap : boolean       := false; --TODO not implemented yet
-          g_axi4s_descr        : t_axi4s_descr := (tdata_nof_bytes => 4,
-          tid_width                                                => 32,
-          tuser_width                                              => 32,
-          has_tlast                                                => 1,
-          has_tkeep                                                => 1,
-          has_tid                                                  => 0,
-          has_tuser                                                => 0);
-          g_in_tdata_nof_bytes       : integer := 4;
-          g_out_tdata_nof_bytes      : integer := 4;
-          g_bram_partition_width     : integer := 0;    --TODO not implemented yet
-          g_hold_last_read           : boolean := true; --TODO not implemented yet
-          g_full_packet              : boolean := false;
-          g_packet_fifo_wr_adr_width : integer := 4 --TODO not implemented yet
-     );
-     port (
-          s_axi_clk    : in std_logic;
-          s_axi_rst_n  : in std_logic;
-          m_axi_clk    : in std_logic;
-          m_axi_rst_n  : in std_logic;
-          axi4s_s_mosi : in t_axi4s_mosi;
-          axi4s_s_miso : out t_axi4s_miso;
-          axi4s_m_mosi : out t_axi4s_mosi;
-          axi4s_m_miso : in t_axi4s_miso
-     );
-end component;
-
-
-
-  --  function get_num_arp_pos(g_num_of_arp_pos:natural;g_inc_luts:boolean) 
-   --     return natural is
-   --     variable result: natural;
- --   begin
-   --     result := g_num_of_arp_pos when g_inc_luts else 0;
-   --     return result;
- --   end function;
- 
- 
- function get_num_arp_pos(g_num_of_arp_pos: natural; g_inc_luts: boolean) 
-    return natural is
-    variable result: natural;
-begin
-    if g_inc_luts then
-        result := g_num_of_arp_pos;
-    else
-        result := 0;
-    end if;
-    return result;
-end function;
-
+    function get_num_arp_pos(g_num_of_arp_pos:natural;g_inc_luts:boolean) 
+        return natural is
+        variable result: natural;
+    begin
+        result := g_num_of_arp_pos when g_inc_luts else 0;
+        return result;
+    end function;
     
     --CONSTANTS AND SIGNALS
     constant C_FIFO_WIDTH      : integer       := udp_maximum(log_2_ceil(G_TX_OUT_FIFO_CAP / (8 * G_UDP_CORE_BYTES)), C_FIFO_MIN_WIDTH);
@@ -502,7 +230,7 @@ begin
 
     lut_gen: if G_INC_LUTS generate
         --Module Reads and Writes to Farm mode LUT
-        tx_lut_poller_inst : tx_path_lut_mode_poller
+        tx_lut_poller_inst : entity work.tx_path_lut_mode_poller
             port map(
                 clk                   => tx_path_clk,
                 farm_mode_lut_status  => farm_mode_lut_status,
@@ -521,7 +249,7 @@ begin
     end generate;
     
     --Constructs a Header for the various packet types
-    tx_header_constructor_inst :  tx_header_constructor
+    tx_header_constructor_inst : entity work.tx_header_constructor
         generic map(
             G_UDP_CORE_BYTES => G_UDP_CORE_BYTES
         )
@@ -568,7 +296,7 @@ begin
             eth_start_data        => eth_start_data
         );
 
-    udp_in_pipe : udp_axi4s_pipe
+    udp_in_pipe : entity work.udp_axi4s_pipe
         generic map(
             G_STAGES       => 1,
             G_BACKPRESSURE => true
@@ -582,7 +310,7 @@ begin
             axi4s_m_miso => udp_axi4s_s_miso_reg
         );
     --Handles incoming UDP data and stores in a FIFO, so lengths can be calculated
-    tx_path_udp_inst : tx_udp_handler
+    tx_path_udp_inst : entity work.tx_udp_handler
         generic map(
             G_FPGA_VENDOR         => G_FPGA_VENDOR,
             G_FPGA_FAMILY         => G_FPGA_FAMILY,
@@ -607,7 +335,7 @@ begin
 
     gen_ping : if G_INC_PING generate
         --Handles ping packets
-        tx_path_ping_inst :  tx_ping_handler
+        tx_path_ping_inst : entity work.tx_ping_handler
             generic map(
                 G_FPGA_VENDOR         => G_FPGA_VENDOR,
                 G_FPGA_FAMILY         => G_FPGA_FAMILY,
@@ -638,7 +366,7 @@ begin
 
     gen_arp : if G_INC_ARP generate
         --Handles ARP requests and replies, outputs signals to update the relevant LUT position
-        tx_path_arp_inst :  tx_arp_handler
+        tx_path_arp_inst : entity work.tx_arp_handler
             generic map(
                 G_NUM_OF_POS          => get_num_arp_pos(G_NUM_OF_ARP_POS, G_INC_LUTS),
                 G_FPGA_VENDOR         => G_FPGA_VENDOR,
@@ -680,7 +408,7 @@ begin
 
     --Handles other IPv4 Protocol Packets (ie. other than UDP and Pings)
     gen_tx_ipv4_packet : if G_INC_IPV4 generate
-        tx_path_ipv4_inst :  tx_pass_in_handler
+        tx_path_ipv4_inst : entity work.tx_pass_in_handler
             generic map(
                 G_TUSER_WIDTH         => 24,
                 G_TID_WIDTH           => 8,
@@ -707,7 +435,7 @@ begin
 
     --Handles other Ethernet Type PAckets (ie. other than IPv4 and ARPs)
     gen_tx_eth_packet : if G_INC_ETH generate
-        tx_path_eth_inst : tx_pass_in_handler
+        tx_path_eth_inst : entity work.tx_pass_in_handler
             generic map(
                 G_TUSER_WIDTH         => 16,
                 G_TID_WIDTH           => 8,
@@ -776,7 +504,7 @@ begin
     end generate;
 
     --Aligns Payload and Header Data to form full packet
-    tx_path_byte_align_inst :tx_byte_slip
+    tx_path_byte_align_inst : entity work.tx_byte_slip
         generic map(
             G_FPGA_VENDOR         => G_FPGA_VENDOR,
             G_FPGA_FAMILY         => G_FPGA_FAMILY,
@@ -800,7 +528,7 @@ begin
             type_frame    => type_frame
         );
 
-    tx_out_fifo_inst : axi4s_fifo
+    tx_out_fifo_inst : entity work.axi4s_fifo
         generic map(
             g_fpga_vendor         => G_FPGA_VENDOR,
             g_fpga_family         => G_FPGA_FAMILY,

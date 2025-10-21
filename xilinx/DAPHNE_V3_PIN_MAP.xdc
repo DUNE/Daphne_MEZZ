@@ -22,9 +22,9 @@
 
 # define primary clocks...
 
-#create_clock -period 10.000 -name sysclk100 -add [get_pins -hierarchical -filter NAME=~\"*sysclk100*\"]
+create_clock -period 10.000 -name sysclk [get_cells -hierarchical -filter {NAME =~ *sysclk_ibuf*}]
 #create_clock -period 16.000 -name rx_tmg_clk -add [get_ports rx0_tmg_p]
-#create_clock -period 10.000 -name clk_pl_2 [get_pins {DAPHNE_V3_F4_1_i/ZYNQ_PS/pl_clk2}]
+#create_clock -period 10.000 -name clk_pl_3 [get_clocks clk_pl_3]
 #create_clock -period 8.000 -name clk_pl_0 [get_pins {DAPHNE_V3_F4_1_i/ZYNQ_PS/pl_clk0}]
 #create_clock -period 40.000 -name clk_pl_1 [get_pins {DAPHNE_V3_F4_1_i/ZYNQ_PS/pl_clk1}]
 
@@ -55,22 +55,23 @@
 #set_clock_groups -name exclusive_clk -physically_exclusive -group [get_clocks {clk500   clk_serdes_INTERNAL_DIVCLK2}]
 # define clock groups this is how we tell vivado which clocks are related and which are NOT
 #create_clock -period 6.400 -name eth_clk -add [get_clocks {clk_pl_2}]
-create_generated_clock -name clk125 -source [get_pins  -regexp .*mmcm1_clkout0.*] -master_clock [get_clocks mmcm1_clkout0] [get_pins -regexp .*mmcm1_clk2_inst.*]
+create_generated_clock -name clk125 -source [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -master_clock [get_cells -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] [get_cells -hierarchical -filter {NAME =~ *clk125*}]
 
-set_false_path -from [get_clocks -regexp .*mmcm1_clkout0.*] -to [get_clocks -regexp .*mmcm1_clkout1.*]
+set_false_path -from [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -to [get_cells   -hierarchical -filter {NAME =~ *mmcm1_clkout1*}]
 
 #set_false_path -from [get_clocks clk100] -to [get_clocks ep_clk62p5]
 #set_false_path -from [get_clocks ep_clk62p5] -to [get_clocks clock]
 #set_false_path -from [get_clocks ep_clk62p5] -to [get_clocks clk100]
-set_false_path -from [get_clocks {mmcm1_clkout1}] -to [get_clocks {clk_pl_0}]
+set_false_path -from [get_clocks  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -to [get_clocks {clk_pl_0}]
 #set_false_path -from [get_clocks {clk125_1}] -to [get_clocks {mmcm1_clkout}]
-set_false_path -from [get_clocks {mmcm1_clkout0}] -to [get_clocks {mmcm1_clkout0}]
-set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {mmcm1_clkout1}]
+set_false_path -from [get_clocks  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -to [get_clocks  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}]
+set_false_path -from [get_clocks clk_pl_0] -to [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}]
+set_false_path -from [get_clocks clk_pl_0] -to [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout1*}]
 #set_false_path -from [get_clocks {clk_pl_3}] -to [get_clocks {clk_pl_2}]
 #set_false_path -from [get_clocks {mmcm1_clkout2}] -to [get_clocks {clk_pl_2}]
-set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {clk125}]
-#set_false_path -from [get_clocks {mmcm0_clkout2}] -to [get_clocks {clk_pl_2}]
-#set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {eth_clk}]
+set_false_path -from [get_clocks clk_pl_0] -to [get_clocks {clk125}]
+#set_false_path -from [get_clocks {mmcm1_clkout1}] -to [get_clocks {clk_pl_2}]
+#set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {clk_pl_2}]
 #set_false_path -from [get_clocks {clk_pl_1}] -to [get_clocks {eth_clk}]
 #set_false_path -from [get_clocks {DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout1}] -to [get_clocks {clock}]
 #set_false_path -from [get_clocks {clk500}] -to [get_clocks {clk125_1}]
@@ -81,7 +82,7 @@ set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {clk125}]
 #set_false_path -from [get_cells DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clk2_inst] -to [get_cells DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clk0_inst]
 #set_false_path -from [get_cells DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clk2_inst] -to [get_cells DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clk1_inst]
 
-
+set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets DAPHNE_MEZ_SELFTRIGGER_V1_i/DAPHNE3/U0/endpoint_inst/pdts_endpoint_inst/pdts_endpoint_inst/rxcdr/bclk]
 
 #set_clock_groups -**async_default**  [get_clocks {mmcm1_clkout0_1}] to [get_clocks {mmcm1_clkout0}]
 #set_clock_groups -asynchronous -group [get_clocks {clk_pl_0}] -group [get_clocks {mmcm1_clkout0_1}]
@@ -207,10 +208,10 @@ set_property PACKAGE_PIN Y5       [get_ports GTH0_REFCLK_N] ;  # pin location SO
 
 #set_property PACKAGE_PIN F23      [get_ports {GTR_REFCLK_P}]   # pin location SOM240_1_C47
 #set_property PACKAGE_PIN F24      [get_ports {GTR_REFCLK_N}]   # pin location SOM240_1_C48
-#set_property PACKAGE_PIN L1       [get_ports CLK100_P] 
-#set_property PACKAGE_PIN K1       [get_ports CLK100_N] 
-#set_property IOSTANDARD LVDS [get_ports CLK100_P]
-#set_property IOSTANDARD LVDS [get_ports CLK100_N]
+set_property PACKAGE_PIN L7       [get_ports sysclk_p] 
+set_property PACKAGE_PIN L6       [get_ports sysclk_n] 
+set_property IOSTANDARD LVDS [get_ports sysclk_p]
+set_property IOSTANDARD LVDS [get_ports sysclk_n]
 
 set_property PACKAGE_PIN AE5 [get_ports afe_clk_p];
 set_property PACKAGE_PIN AF5 [get_ports afe_clk_n];

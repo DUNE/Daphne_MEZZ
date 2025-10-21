@@ -15,9 +15,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
 library ipbus;
-use work.ipbus.ipbus.all;   -- addede work.   it got rid of a lot of errors   -- Jacques
+use work.ipbus.all;
 use work.ipbus_reg_types.all;
---use ipbus.ipbus_reg_types.all;   added the above line --- Jacques
 
 entity udp_ipbus_dpram is
     generic(

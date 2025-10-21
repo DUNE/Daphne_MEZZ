@@ -45,20 +45,6 @@ entity tx_path_8b10b_crc_mii is
 end entity tx_path_8b10b_crc_mii;
 
 architecture behavioural of tx_path_8b10b_crc_mii is
-
-component crc32_8_wrapper is
-    generic(
-        INIT     : std_logic_vector(31 downto 0) := X"FFFFFFFF";
-        LL_WIDTH : integer                       := 8
-    );
-    port(
-        clk     : in  std_logic;
-        rst_s_n : in  std_logic;
-        enable  : in  std_logic;
-        data    : in  std_logic_vector(LL_WIDTH - 1 downto 0);
-        crc     : out std_logic_vector(31 downto 0)
-    );
-end component;
     --------------------------------------------------------------------------------
     -- Constants for Calculating Boundary Positions and to construct and index "trailer" Words:
     --------------------------------------------------------------------------------
@@ -115,7 +101,6 @@ end component;
     signal trailer_idx_i             : integer range 0 to 7;
     signal complete_trailer_data_int : std_logic_vector(7 * 8 - 1 downto 0);
     signal complete_trailer_ctrl_int : std_logic_vector(7 - 1 downto 0);
-    signal enable_reg: std_logic ;
 
 begin
 
@@ -123,7 +108,7 @@ begin
     ctrl_out                                 <= pipeline_control(0);
     valid_out                                <= pipeline_src_rdy(0);
     last_out                                 <= pipeline_eof(0);
-    enable_reg <= axi4s_s_mosi.tvalid or reset_en;
+
     crc_mii_fsm : process(clk)
     begin
         if (rising_edge(clk)) then
@@ -245,8 +230,8 @@ begin
             end if;
         end if;
     end process;
-    
-    crc_1byte_inst : crc32_8_wrapper
+
+    crc_1byte_inst : entity work.crc32_8_wrapper
         generic map(
             INIT     => C_CRC_INIT_WORD,
             LL_WIDTH => 8
@@ -254,7 +239,7 @@ begin
         port map(
             clk     => clk,
             rst_s_n => clear_fcs_n,
-            enable  => enable_reg,   ---- Jacques
+            enable  => axi4s_s_mosi.tvalid or reset_en,
             data    => axi4s_s_mosi.tdata(8 - 1 downto 0),
             crc     => crc_out_int
         );
