@@ -234,7 +234,7 @@ set xciDAQFiles_aux [get_files_recursive $rtlDAQDir "*.xci"]
 set xciDAQFiles [ignore_files $xciDAQFiles_aux "xxv_ethernet_0_gt.xci"]
 
 set vhdlFiles_aux [get_files_recursive $rtlDir "*.vhd"]
-set vhdlFiles [ignore_files $vhdlFiles_aux {"daphne3.vhd" "auto_afe.vhd" "auto_fsm.vhd" "i2cm.vhd" "spim_cm.vhd" "DAQ_CLOCKS.vhd" "stream_top_wrapper.vhd" "stream8.vhd"}]
+set vhdlFiles [ignore_files $vhdlFiles_aux {"daphne3.vhd" "auto_afe.vhd" "auto_fsm.vhd" "i2cm.vhd" "spim_cm.vhd" "DAQ_CLOCKS.vhd" "AXI_RAM.vhd" "stream_top_wrapper.vhd" "stream8.vhd"}]
 set verilogFiles [get_files_recursive $rtlDir "*.v"]
 
 set tbFilesVhdl [get_files_recursive $tbDir "*.vhd"]
@@ -855,7 +855,6 @@ foreach memoryMapBus $daphne_bus_interfaces {
         set_property RANGE_BIT_STRING_LENGTH 33 $addrBlock
     }
 
-    set_property RANGE_FORMAT bitString $addrBlock
     set_property RANGE_MINIMUM 4096 $addrBlock
     set_property USAGE register $addrBlock
     set_property WIDTH 32 $addrBlock
