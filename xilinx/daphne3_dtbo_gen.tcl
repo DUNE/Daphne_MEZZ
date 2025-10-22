@@ -12,10 +12,10 @@ set out_dir [lindex $argv 1]
 set git_sha [lindex $argv 2]
  
 # open the generated hardware design XSA
-hsi::open_hw_design $out_dir/daphne3_$git_sha.xsa
+hsi::open_hw_design $out_dir/daphne3_st_$git_sha.xsa
 
 # generate the device tree using the generated XSA
-createdts -hw $hw -zocl -platform-name daphne3_$git_sha -git-branch xlnx_rel_v2022.2 -overlay -compile -out $out_dir/daphne3_$git_sha
+createdts -hw $hw -zocl -platform-name daphne3_st_$git_sha -git-branch xlnx_rel_v2022.2 -overlay -compile -out $out_dir/daphne3_st_$git_sha
  
 # exit the process once done
 exit
