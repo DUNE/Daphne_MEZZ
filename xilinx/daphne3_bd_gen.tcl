@@ -629,11 +629,11 @@ MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 
     CONFIG.PSU__CRF_APB__DPDMA_REF_CTRL__SRCSEL {APLL} \
     CONFIG.PSU__CRF_APB__DPLL_CTRL__FRACFREQ {27.138} \
     CONFIG.PSU__CRF_APB__DPLL_CTRL__SRCSEL {PSS_REF_CLK} \
-    CONFIG.PSU__CRF_APB__DP_AUDIO_REF_CTRL__ACT_FREQMHZ {24.242182} \
+    CONFIG.PSU__CRF_APB__DP_AUDIO_REF_CTRL__ACT_FREQMHZ {24.999750} \
     CONFIG.PSU__CRF_APB__DP_AUDIO_REF_CTRL__FREQMHZ {25} \
     CONFIG.PSU__CRF_APB__DP_AUDIO_REF_CTRL__SRCSEL {RPLL} \
     CONFIG.PSU__CRF_APB__DP_AUDIO__FRAC_ENABLED {0} \
-    CONFIG.PSU__CRF_APB__DP_STC_REF_CTRL__ACT_FREQMHZ {26.666401} \
+    CONFIG.PSU__CRF_APB__DP_STC_REF_CTRL__ACT_FREQMHZ {26.315527} \
     CONFIG.PSU__CRF_APB__DP_STC_REF_CTRL__FREQMHZ {27} \
     CONFIG.PSU__CRF_APB__DP_STC_REF_CTRL__SRCSEL {RPLL} \
     CONFIG.PSU__CRF_APB__DP_VIDEO_REF_CTRL__ACT_FREQMHZ {299.997009} \
@@ -677,7 +677,7 @@ MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 
     CONFIG.PSU__CRL_APB__CAN1_REF_CTRL__ACT_FREQMHZ {100} \
     CONFIG.PSU__CRL_APB__CAN1_REF_CTRL__FREQMHZ {100} \
     CONFIG.PSU__CRL_APB__CAN1_REF_CTRL__SRCSEL {IOPLL} \
-    CONFIG.PSU__CRL_APB__CPU_R5_CTRL__ACT_FREQMHZ {533.328003} \
+    CONFIG.PSU__CRL_APB__CPU_R5_CTRL__ACT_FREQMHZ {499.994995} \
     CONFIG.PSU__CRL_APB__CPU_R5_CTRL__FREQMHZ {533.333} \
     CONFIG.PSU__CRL_APB__CPU_R5_CTRL__SRCSEL {RPLL} \
     CONFIG.PSU__CRL_APB__CSU_PLL_CTRL__ACT_FREQMHZ {180} \
@@ -741,9 +741,9 @@ MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 MIO#GPIO2 
     CONFIG.PSU__CRL_APB__PL1_REF_CTRL__ACT_FREQMHZ {24.999750} \
     CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {25} \
     CONFIG.PSU__CRL_APB__PL1_REF_CTRL__SRCSEL {IOPLL} \
-    CONFIG.PSU__CRL_APB__PL2_REF_CTRL__ACT_FREQMHZ {149.998505} \
-    CONFIG.PSU__CRL_APB__PL2_REF_CTRL__FREQMHZ {156.25} \
-    CONFIG.PSU__CRL_APB__PL2_REF_CTRL__SRCSEL {IOPLL} \
+    CONFIG.PSU__CRL_APB__PL2_REF_CTRL__ACT_FREQMHZ {199.998001} \
+    CONFIG.PSU__CRL_APB__PL2_REF_CTRL__FREQMHZ {200} \
+    CONFIG.PSU__CRL_APB__PL2_REF_CTRL__SRCSEL {RPLL} \
     CONFIG.PSU__CRL_APB__PL3_REF_CTRL__ACT_FREQMHZ {99.999001} \
     CONFIG.PSU__CRL_APB__PL3_REF_CTRL__FREQMHZ {100} \
     CONFIG.PSU__CRL_APB__PL3_REF_CTRL__SRCSEL {IOPLL} \
@@ -1132,12 +1132,12 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
     CONFIG.PSU__SD0__PERIPHERAL__IO {MIO 13 .. 22} \
     CONFIG.PSU__SD0__RESET__ENABLE {1} \
     CONFIG.PSU__SD0__SLOT_TYPE {eMMC} \
-    CONFIG.PSU__SD1__CLK_100_SDR_OTAP_DLY {0x3} \
-    CONFIG.PSU__SD1__CLK_200_SDR_OTAP_DLY {0x3} \
-    CONFIG.PSU__SD1__CLK_50_DDR_ITAP_DLY {0x3D} \
-    CONFIG.PSU__SD1__CLK_50_DDR_OTAP_DLY {0x4} \
-    CONFIG.PSU__SD1__CLK_50_SDR_ITAP_DLY {0x15} \
-    CONFIG.PSU__SD1__CLK_50_SDR_OTAP_DLY {0x5} \
+    CONFIG.PSU__SD1__CLK_100_SDR_OTAP_DLY {0x00} \
+    CONFIG.PSU__SD1__CLK_200_SDR_OTAP_DLY {0x00} \
+    CONFIG.PSU__SD1__CLK_50_DDR_ITAP_DLY {0x00} \
+    CONFIG.PSU__SD1__CLK_50_DDR_OTAP_DLY {0x00} \
+    CONFIG.PSU__SD1__CLK_50_SDR_ITAP_DLY {0x00} \
+    CONFIG.PSU__SD1__CLK_50_SDR_OTAP_DLY {0x00} \
     CONFIG.PSU__SD1__PERIPHERAL__ENABLE {0} \
     CONFIG.PSU__SD1__RESET__ENABLE {0} \
     CONFIG.PSU__SPI0_LOOP_SPI1__ENABLE {0} \
@@ -1295,8 +1295,8 @@ set xlconcat_0 [create_bd_cell -vlnv xilinx.com:ip:xlconcat:2.1 -type IP xlconca
 # create instance: system_ila_0, and set its properties
 set system_ila_0 [create_bd_cell -vlnv xilinx.com:ip:system_ila:1.1 -type IP system_ila_0]
 set_property -dict [list \
-    CONFIG.C_MON_TYPE {MIX} \
-    CONFIG.C_NUM_OF_PROBES {5} \
+    CONFIG.C_MON_TYPE {NATIVE} \
+    CONFIG.C_NUM_OF_PROBES {7} \
     CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0} \
 ] $system_ila_0
 
@@ -1314,16 +1314,18 @@ connect_bd_intf_net -intf_net smartconnect_0_M06_AXI [get_bd_intf_pins smartconn
 connect_bd_intf_net -intf_net smartconnect_0_M07_AXI [get_bd_intf_pins smartconnect_0/M07_AXI] [get_bd_intf_pins DAPHNE3/STUFF_S_AXI]
 connect_bd_intf_net -intf_net smartconnect_0_M08_AXI [get_bd_intf_pins smartconnect_0/M08_AXI] [get_bd_intf_pins DAPHNE3/TRIRG_S_AXI]
 connect_bd_intf_net -intf_net smartconnect_0_M09_AXI [get_bd_intf_pins axi_intc_0/s_axi] [get_bd_intf_pins smartconnect_0/M09_AXI]
-connect_bd_intf_net -intf_net smartconnect_0_M10_AXI [get_bd_intf_pins smartconnect_0/M10_AXI] [get_bd_intf_pins DAPHNE3/OUTBUFF_S_AXI]
-connect_bd_intf_net -intf_net smartconnect_0_M11_AXI [get_bd_intf_pins smartconnect_0/M11_AXI] [get_bd_intf_pins DAPHNE3/THRESH_S_AXI]
-connect_bd_intf_net -intf_net [get_bd_intf_nets smartconnect_0_M10_AXI] [get_bd_intf_pins DAPHNE3/OUTBUFF_S_AXI] [get_bd_intf_pins system_ila_0/SLOT_0_AXI]
+connect_bd_intf_net -intf_net smartconnect_0_M10_AXI [get_bd_intf_pins DAPHNE3/OUTBUFF_S_AXI] [get_bd_intf_pins smartconnect_0/M10_AXI] 
+connect_bd_intf_net -intf_net smartconnect_0_M11_AXI [get_bd_intf_pins DAPHNE3/THRESH_S_AXI] [get_bd_intf_pins smartconnect_0/M11_AXI] 
 connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM0_FPD [get_bd_intf_pins smartconnect_0/S01_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM0_FPD]
 connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM0_LPD [get_bd_intf_pins smartconnect_0/S00_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM0_LPD]
 
 # and finish connecting the rest of the ports
+connect_bd_net -net DAPHNE3_CCTR_DEBUG [get_bd_pins DAPHNE3/CCTR_DEBUG] [get_bd_pins system_ila_0/probe6]
 connect_bd_net -net DAPHNE3_DIN_DEBUG [get_bd_pins DAPHNE3/DIN_DEBUG] [get_bd_pins system_ila_0/probe4]
-connect_bd_net -net DAPHNE3_LAST_DEBUG [get_bd_pins DAPHNE3/LAST_DEBUG] [get_bd_pins system_ila_0/probe2]
-connect_bd_net -net DAPHNE3_VALID_DEBUG [get_bd_pins DAPHNE3/VALID_DEBUG] [get_bd_pins system_ila_0/probe1]
+connect_bd_net -net DAPHNE3_F_OK_DEBUG [get_bd_pins DAPHNE3/F_OK_DEBUG] [get_bd_pins system_ila_0/probe3]
+connect_bd_net -net DAPHNE3_SCTR_DEBUG [get_bd_pins DAPHNE3/SCTR_DEBUG] [get_bd_pins system_ila_0/probe5]
+# connect_bd_net -net DAPHNE3_LAST_DEBUG [get_bd_pins DAPHNE3/LAST_DEBUG] [get_bd_pins system_ila_0/probe2]
+# connect_bd_net -net DAPHNE3_VALID_DEBUG [get_bd_pins DAPHNE3/VALID_DEBUG] [get_bd_pins system_ila_0/probe1]
 connect_bd_net -net DAPHNE3_afe0_mosi [get_bd_pins DAPHNE3/afe0_mosi] [get_bd_ports AFE0_SDATA]
 connect_bd_net -net DAPHNE3_afe0_sclk [get_bd_pins DAPHNE3/afe0_sclk] [get_bd_ports AFE0_SCLK]
 connect_bd_net -net DAPHNE3_afe12_mosi [get_bd_pins DAPHNE3/afe12_mosi] [get_bd_ports AFE12_SDATA]
@@ -1335,6 +1337,7 @@ connect_bd_net -net DAPHNE3_afe_clk_p [get_bd_pins DAPHNE3/afe_clk_p] [get_bd_po
 connect_bd_net -net DAPHNE3_afe_pdn [get_bd_pins DAPHNE3/afe_pdn] [get_bd_ports AFE_PD]
 connect_bd_net -net DAPHNE3_afe_rst [get_bd_pins DAPHNE3/afe_rst] [get_bd_ports AFE_RST]
 connect_bd_net -net DAPHNE3_afe_sen [get_bd_pins DAPHNE3/afe_sen] [get_bd_ports afe_sen]
+connect_bd_net -net DAPHNE3_clock_gen_debug [get_bd_pins DAPHNE3/clock_gen_debug] [get_bd_pins system_ila_0/probe0]
 connect_bd_net -net DAPHNE3_cm_csn [get_bd_pins axi_quad_spi_0/ss_o] [get_bd_ports CM_CSn]
 connect_bd_net -net DAPHNE3_cm_din [get_bd_pins axi_quad_spi_0/io0_o] [get_bd_ports CM_DIN]
 connect_bd_net -net DAPHNE3_cm_sclk [get_bd_pins axi_quad_spi_0/sck_o] [get_bd_ports CM_SCLK]
@@ -1342,24 +1345,26 @@ connect_bd_net -net DAPHNE3_dac_din [get_bd_pins DAPHNE3/dac_din] [get_bd_ports 
 connect_bd_net -net DAPHNE3_dac_ldac_n [get_bd_pins DAPHNE3/dac_ldac_n] [get_bd_ports DACS_LDACN]
 connect_bd_net -net DAPHNE3_dac_sclk [get_bd_pins DAPHNE3/dac_sclk] [get_bd_ports DACS_SCLK]
 connect_bd_net -net DAPHNE3_dac_sync_n [get_bd_pins DAPHNE3/dac_sync_n] [get_bd_ports DACS_CS]
+connect_bd_net -net DAPHNE3_ep_62p5MHZ_CLK_debug [get_bd_pins DAPHNE3/ep_62p5MHZ_CLK_debug] [get_bd_pins system_ila_0/probe2]
 connect_bd_net -net DAPHNE3_eth0_tx_dis [get_bd_pins DAPHNE3/eth0_tx_dis] [get_bd_ports SFP_GTH0_TX_DIS]
 connect_bd_net -net DAPHNE3_eth0_tx_n [get_bd_pins DAPHNE3/eth0_tx_n] [get_bd_ports TX0_GTH_N]
 connect_bd_net -net DAPHNE3_eth0_tx_p [get_bd_pins DAPHNE3/eth0_tx_p] [get_bd_ports TX0_GTH_P]
 connect_bd_net -net DAPHNE3_fan_ctrl [get_bd_pins DAPHNE3/fan_ctrl] [get_bd_ports FAN_CONTROL]
 connect_bd_net -net DAPHNE3_hvbias_en [get_bd_pins DAPHNE3/hvbias_en] [get_bd_ports VBIAS_EN]
+connect_bd_net -net DAPHNE3_mmcm0_100MHZ_CLK_debug [get_bd_pins DAPHNE3/mmcm0_100MHZ_CLK_debug] [get_bd_pins system_ila_0/probe1]
 connect_bd_net -net DAPHNE3_mux_a [get_bd_pins DAPHNE3/mux_a] [get_bd_ports MUXA]
 connect_bd_net -net DAPHNE3_mux_en [get_bd_pins DAPHNE3/mux_en] [get_bd_ports MUX_EN]
 connect_bd_net -net DAPHNE3_offset_ldac_n [get_bd_pins DAPHNE3/offset_ldac_n] [get_bd_ports offset_ldac_n]
 connect_bd_net -net DAPHNE3_offset_sync_n [get_bd_pins DAPHNE3/offset_sync_n] [get_bd_ports offset_sync_n]
-connect_bd_net -net DAPHNE3_0_out_buff_clk [get_bd_pins DAPHNE3/out_buff_clk] [get_bd_pins system_ila_0/probe3]
-connect_bd_net -net DAPHNE3_0_out_buff_data [get_bd_pins DAPHNE3/out_buff_data] [get_bd_pins system_ila_0/probe0]
+# connect_bd_net -net DAPHNE3_0_out_buff_clk [get_bd_pins DAPHNE3/out_buff_clk] [get_bd_pins system_ila_0/probe3]
+# connect_bd_net -net DAPHNE3_0_out_buff_data [get_bd_pins DAPHNE3/out_buff_data] [get_bd_pins system_ila_0/probe0]
 connect_bd_net -net DAPHNE3_sfp_tmg_tx_dis [get_bd_pins DAPHNE3/sfp_tmg_tx_dis] [get_bd_ports sfp_tmg_tx_dis]
 connect_bd_net -net DAPHNE3_trim_ldac_n [get_bd_pins DAPHNE3/trim_ldac_n] [get_bd_ports trim_ldac_n]
 connect_bd_net -net DAPHNE3_trim_sync_n [get_bd_pins DAPHNE3/trim_sync_n] [get_bd_ports trim_sync_n]
 connect_bd_net -net DAPHNE3_tx0_tmg_n [get_bd_pins DAPHNE3/tx0_tmg_n] [get_bd_ports tx0_tmg_n]
 connect_bd_net -net DAPHNE3_tx0_tmg_p [get_bd_pins DAPHNE3/tx0_tmg_p] [get_bd_ports tx0_tmg_p]
 connect_bd_net -net IIC_RESET_peripheral_aresetn [get_bd_pins IIC_RESET/peripheral_aresetn] [get_bd_pins axi_iic_0/s_axi_aresetn]
-connect_bd_net -net Net1 [get_bd_pins SYSTEM_RESET/peripheral_aresetn] [get_bd_pins smartconnect_0/aresetn] [get_bd_pins axi_quad_spi_0/s_axi_aresetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins system_ila_0/resetn] [get_bd_pins DAPHNE3/FRONT_END_S_AXI_ARESETN] [get_bd_pins DAPHNE3/SPY_BUF_S_S_AXI_ARESETN] [get_bd_pins DAPHNE3/END_P_S_AXI_ARESETN] [get_bd_pins DAPHNE3/SPI_DAC_S_AXI_ARESETN] [get_bd_pins DAPHNE3/AFE_SPI_S_AXI_ARESETN] [get_bd_pins DAPHNE3/TRIRG_S_AXI_ARESETN] [get_bd_pins DAPHNE3/STUFF_S_AXI_ARESETN] [get_bd_pins DAPHNE3/THRESH_S_AXI_ARESETN] [get_bd_pins DAPHNE3/OUTBUFF_S_AXI_ARESETN]
+connect_bd_net -net Net1 [get_bd_pins SYSTEM_RESET/peripheral_aresetn] [get_bd_pins smartconnect_0/aresetn] [get_bd_pins axi_quad_spi_0/s_axi_aresetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins DAPHNE3/FRONT_END_S_AXI_ARESETN] [get_bd_pins DAPHNE3/SPY_BUF_S_S_AXI_ARESETN] [get_bd_pins DAPHNE3/END_P_S_AXI_ARESETN] [get_bd_pins DAPHNE3/SPI_DAC_S_AXI_ARESETN] [get_bd_pins DAPHNE3/AFE_SPI_S_AXI_ARESETN] [get_bd_pins DAPHNE3/TRIRG_S_AXI_ARESETN] [get_bd_pins DAPHNE3/STUFF_S_AXI_ARESETN] [get_bd_pins DAPHNE3/THRESH_S_AXI_ARESETN] [get_bd_pins DAPHNE3/OUTBUFF_S_AXI_ARESETN]
 connect_bd_net -net afe0_miso_0_1 [get_bd_ports AFE0_MISO] [get_bd_pins DAPHNE3/afe0_miso]
 connect_bd_net -net afe0_n_0_1 [get_bd_ports afe0_n] [get_bd_pins DAPHNE3/afe0_n]
 connect_bd_net -net afe0_p_0_1 [get_bd_ports afe0_p] [get_bd_pins DAPHNE3/afe0_p]
@@ -1389,8 +1394,10 @@ connect_bd_net -net sysclk_n_0_1 [get_bd_ports sysclk_n] [get_bd_pins DAPHNE3/sy
 connect_bd_net -net sysclk_p_0_1 [get_bd_ports sysclk_p] [get_bd_pins DAPHNE3/sysclk_p]
 connect_bd_net -net trig_IN_0_1 [get_bd_ports trig_IN] [get_bd_pins DAPHNE3/trig_IN] [get_bd_pins DAPHNE3/FORCE_TRIG]
 connect_bd_net -net xlconcat_0_dout [get_bd_pins xlconcat_0/dout] [get_bd_pins axi_intc_0/intr]
-connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins SYSTEM_RESET/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_lpd_aclk] [get_bd_pins axi_quad_spi_0/s_axi_aclk] [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins system_ila_0/clk] [get_bd_pins DAPHNE3/FRONT_END_S_AXI_ACLK] [get_bd_pins DAPHNE3/SPY_BUF_S_S_AXI_ACLK] [get_bd_pins DAPHNE3/END_P_S_AXI_ACLK] [get_bd_pins DAPHNE3/SPI_DAC_S_AXI_ACLK] [get_bd_pins DAPHNE3/AFE_SPI_S_AXI_ACLK] [get_bd_pins DAPHNE3/TRIRG_S_AXI_ACLK] [get_bd_pins DAPHNE3/STUFF_S_AXI_ACLK] [get_bd_pins DAPHNE3/THRESH_S_AXI_ACLK] [get_bd_pins DAPHNE3/OUTBUFF_S_AXI_ACLK]
+connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins SYSTEM_RESET/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_lpd_aclk] [get_bd_pins axi_quad_spi_0/s_axi_aclk] [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins DAPHNE3/FRONT_END_S_AXI_ACLK] [get_bd_pins DAPHNE3/SPY_BUF_S_S_AXI_ACLK] [get_bd_pins DAPHNE3/END_P_S_AXI_ACLK] [get_bd_pins DAPHNE3/SPI_DAC_S_AXI_ACLK] [get_bd_pins DAPHNE3/AFE_SPI_S_AXI_ACLK] [get_bd_pins DAPHNE3/TRIRG_S_AXI_ACLK] [get_bd_pins DAPHNE3/STUFF_S_AXI_ACLK] [get_bd_pins DAPHNE3/THRESH_S_AXI_ACLK] [get_bd_pins DAPHNE3/OUTBUFF_S_AXI_ACLK]
 connect_bd_net -net zynq_ultra_ps_e_0_pl_clk1 [get_bd_pins zynq_ultra_ps_e_0/pl_clk1] [get_bd_pins smartconnect_0/aclk1] [get_bd_pins IIC_RESET/slowest_sync_clk] [get_bd_pins axi_iic_0/s_axi_aclk] [get_bd_pins axi_quad_spi_0/ext_spi_clk]
+connect_bd_net -net zynq_ultra_ps_e_0_pl_clk2 [get_bd_pins zynq_ultra_ps_e_0/pl_clk2] [get_bd_pins system_ila_0/clk]
+connect_bd_net -net zynq_ultra_ps_e_0_pl_clk3 [get_bd_pins zynq_ultra_ps_e_0/pl_clk3] [get_bd_pins DAPHNE3/sysclk100]
 connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn0 [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0] [get_bd_pins SYSTEM_RESET/ext_reset_in]
 connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn1 [get_bd_pins zynq_ultra_ps_e_0/pl_resetn1] [get_bd_pins IIC_RESET/ext_reset_in]
 

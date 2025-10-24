@@ -14,7 +14,8 @@ use work.pdts_clock_defs.all;
 
 entity pdts_ep_sm is
 	generic(
-		SCLK_FREQ: real:=99.999;
+		SCLK_FREQ: real:=100.00;
+		CLK_FREQ: real:=62.50;
 		SKIP_FREQ: boolean:= false ;
 		SKIP_TSTAMP: boolean -- Skip the timestamp initialisation step
 	);
@@ -35,6 +36,9 @@ entity pdts_ep_sm is
 		reg_rst: out std_logic; -- Register file reset (clk domain)
 		tsrdy: in std_logic; -- Timestamp ready (clk domain)
 		ready: out std_logic; -- Output ready signal (clk domain)
+		F_OK_DEBUG: OUT std_logic ;
+		SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+		CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
 		stat: out std_logic_vector(3 downto 0) -- Status output (sys_clk domain)
 	);
 
@@ -267,5 +271,7 @@ begin
 
 	cdr_rst <= srst;
 	reg_rst <= srst;
-
+    F_OK_DEBUG <= f_ok;
+    SCTR_DEBUG <= std_logic_vector (sctr);
+    cCTR_DEBUG <= std_logic_vector (cctr);
 end rtl;

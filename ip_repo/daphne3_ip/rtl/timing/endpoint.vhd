@@ -29,7 +29,9 @@ port(
     sysclk_p, sysclk_n:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
     --sysclk100:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
     -- external optical timing SFP link interface
-
+    clock_gen_debug: out std_logic ;
+    mmcm0_100MHZ_CLK_debug: out std_logic ;
+    ep_62p5MHZ_CLK_debug: out std_logic ;
     sfp_tmg_los: in std_logic; -- loss of signal
     rx0_tmg_p, rx0_tmg_n: in std_logic; -- LVDS recovered serial data ACKCHYUALLY the clock!
     sfp_tmg_tx_dis: out std_logic; -- high to disable timing SFP TX
@@ -43,6 +45,10 @@ port(
     sclk200:  out std_logic;  -- front end clock 125MHz
     timestamp: out std_logic_vector(63 downto 0); -- sync to clock
 
+
+F_OK_DEBUG: out std_logic ;
+		SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+		CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
     -- AXI-Lite interface for the control/status registers
 
 	S_AXI_ACLK: in std_logic;
@@ -69,7 +75,7 @@ port(
 );
 end endpoint;
 
-architecture endpoint_arch of endpoint is
+architecture endpoint_arch of endpoint is 
 
 component pdts_endpoint_wrapper is -- wrapped and cleaned up for DAPHNE V2a design
 port(
@@ -84,6 +90,9 @@ port(
     clk: out std_logic; -- Base clock output is 62.5MHz
     rst: out std_logic; -- Base clock reset (clk domain)
     ready: out std_logic; -- Endpoint ready flag (clk domain)
+    F_OK_DEBUG: out std_logic ;
+    		SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+		CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
     tstamp: out std_logic_vector(63 downto 0) -- Timestamp (clk domain)
 );
 end component;
@@ -118,6 +127,7 @@ port(
     ep_reset: out std_logic;
     ep_addr: out std_logic_vector(15 downto 0);
     mmcm1_reset: out std_logic;
+    mmcm0_reset: out std_logic;
     use_ep: out std_logic
 );
 end component;
@@ -135,18 +145,20 @@ signal rx0_tmg, tx0_tmg: std_logic;
 signal ep_clk62p5: std_logic;
 
 signal mmcm1_clkfbout, mmcm1_clkfbout_buf: std_logic;
-signal mmcm1_clkout0, mmcm1_clkout1: std_logic;
+signal mmcm1_clkout0, mmcm1_clkout1,mmcm1_clkout2: std_logic;
 signal clock_i: std_logic;
 signal mmcm0_clkout1: std_logic ;
 signal mmcm0_locked: std_logic;
 signal mmcm1_locked: std_logic;
 signal mmcm1_reset: std_logic;
+signal mmcm0_reset: std_logic;
 signal use_ep: std_logic;
 signal ep_stat: std_logic_vector(3 downto 0);
 signal ep_reset: std_logic;
 signal ep_ts_rdy: std_logic;
 signal ep_addr: std_logic_vector(15 downto 0);
-
+signal f_ok: std_logic ;
+signal sctr, cctr: std_logic_vector (15 downto 0);
 signal real_timestamp, fake_timestamp, timestamp_reg: std_logic_vector(63 downto 0);
 
 begin
@@ -155,7 +167,7 @@ reset_async <= not S_AXI_ARESETN;
 
 -- if using external LVDS 100MHz sysclk, receive it with IBUFDS.
 
-sysclk_ibufds_inst : IBUFDS 
+sysclk_ibufds_inst : IBUFGDS 
 port map(O => sysclk_ibuf, I => sysclk_p, IB => sysclk_n);
 
 mmcm0_inst: MMCME2_ADV
@@ -215,7 +227,7 @@ port map(
     CLKINSTOPPED        => open,
     CLKFBSTOPPED        => open,
     PWRDWN              => '0',
-    RST                 => reset_async
+    RST                 => mmcm0_reset
 );
 
 mmcm0_clkfb_inst: BUFG port map( I => mmcm0_clkfbout, O => mmcm0_clkfbout_buf);
@@ -250,6 +262,9 @@ pdts_endpoint_inst: pdts_endpoint_wrapper
 		clk => ep_clk62p5, -- output clock from endpoint 62.5MHz
 		rst => open, -- endpoint reset output not used here
 		ready => ep_ts_rdy,
+		F_OK_DEBUG => f_ok,
+		    SCTR_DEBUG=> sctr,
+		    CCTR_DEBUG => cctr,
 		tstamp => real_timestamp
 	);
 
@@ -331,6 +346,8 @@ mmcm1_clk0_inst:  BUFG port map( I => mmcm1_clkout0, O => clk500); -- fast clock
 
 -- Xilinx now recommends using BUFGCE_DIV to make the 125MHz clock from the 500MHz MMCM1 output, rather than using
 -- a different MMCM1 output to make the 125MHz clock... okaaay... see UG571 fig 2-27.
+--mmcm1_clk2_inst:  BUFG port map( I => mmcm1_clkout2, O => clk125);
+
 
 mmcm1_clk2_inst : BUFGCE_DIV
 generic map ( BUFGCE_DIVIDE => 4, IS_CE_INVERTED => '0', IS_CLR_INVERTED => '0', IS_I_INVERTED => '0', SIM_DEVICE => "ULTRASCALE_PLUS" )
@@ -407,7 +424,14 @@ port map(
     ep_reset => ep_reset,
     ep_addr => ep_addr,
     mmcm1_reset => mmcm1_reset,
+    mmcm0_reset => mmcm0_reset,
     use_ep => use_ep
 );
+F_OK_DEBUG <= f_ok;
+clock_gen_debug  <= sysclk_ibuf;
+mmcm0_100MHZ_CLK_debug   <= mmcm0_clkout2;
+ep_62p5MHZ_CLK_debug   <=   ep_clk62p5 ;
 
+    SCTR_DEBUG <= sctr;
+    cCTR_DEBUG <= cctr;
 end endpoint_arch;

@@ -59,6 +59,7 @@ entity ep_axi is
     ep_reset: out std_logic; -- soft reset endpoint logic
     ep_addr: out std_logic_vector(15 downto 0); -- endpoint address
     mmcm1_reset: out std_logic;
+     mmcm0_reset: out std_logic;
     use_ep: out std_logic
 
 	);
@@ -326,5 +327,6 @@ begin
 
     use_ep      <= clock_ctrl_reg(2);
     mmcm1_reset <= clock_ctrl_reg(1);
+     mmcm0_reset <= clock_ctrl_reg(0);
 
 end ep_axi_arch;

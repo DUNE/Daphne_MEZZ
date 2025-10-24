@@ -566,6 +566,7 @@ set daphne_clk_parameters {
 set daphne_pl_clk_interfaces {
     afe_clk_n
     afe_clk_p
+    clock_gen_debug
     eth_clk_n
     eth_clk_p
     out_buff_clk

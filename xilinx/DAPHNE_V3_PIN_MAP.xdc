@@ -22,8 +22,9 @@
 
 # define primary clocks...
 
-create_clock -period 10.000 -name sysclk [get_cells -hierarchical -filter {NAME =~ *sysclk_ibuf*}]
-#create_clock -period 16.000 -name rx_tmg_clk -add [get_ports rx0_tmg_p]
+create_clock -period 10.000 -name sysclk [ get_ports sysclk_p]
+
+
 #create_clock -period 10.000 -name clk_pl_3 [get_clocks clk_pl_3]
 #create_clock -period 8.000 -name clk_pl_0 [get_pins {DAPHNE_V3_F4_1_i/ZYNQ_PS/pl_clk0}]
 #create_clock -period 40.000 -name clk_pl_1 [get_pins {DAPHNE_V3_F4_1_i/ZYNQ_PS/pl_clk1}]
@@ -31,8 +32,8 @@ create_clock -period 10.000 -name sysclk [get_cells -hierarchical -filter {NAME 
 #create_clock -period 16.000 -name ep_clk62p5 -add [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/ep_clk62p5]
 
 # rename the auto-generated clocks...
-#create_generated_clock -name ep_clk62p5     [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/ep_clk62p5]
-#create_generated_clock -name local_clk62p5 [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm0_clkout0]
+create_generated_clock -name ep_clk62p5     [get_nets DAPHNE_MEZ_SELFTRIGGER_V1_i/DAPHNE3/U0/endpoint_inst/ep_clk62p5]
+create_generated_clock -name local_clk62p5 [get_nets DAPHNE_MEZ_SELFTRIGGER_V1_i/DAPHNE3/U0/endpoint_inst/local_clk62p5]
 #create_generated_clock -name clk100 [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm0_clkout2]
 #create_generated_clock -name mmcm0_clkfbout [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm0_clkfbout]
 
@@ -41,9 +42,13 @@ create_clock -period 10.000 -name sysclk [get_cells -hierarchical -filter {NAME 
 #create_generated_clock -name ep_clk4x [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/pdts_endpoint_inst/pdts_endpoint_inst/rxcdr/clku4x]
 #create_generated_clock -name clkfb          [get_nets {DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/pdts_endpoint_inst/pdts_endpoint_inst/rxcdr/clkfb}]
 
-#create_generated_clock -name clk500_0        -master_clock ep_clk62p5 [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout0]
+create_generated_clock -name clk500        -master_clock ep_clk62p5 [get_nets DAPHNE_MEZ_SELFTRIGGER_V1_i/DAPHNE3/U0/endpoint_inst/clk500]
 #create_generated_clock -name clock_0 -master_clock [get_clocks ep_clk62p5] [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout1]
-#create_generated_clock -name clk125_0        -master_clock ep_clk62p5 [get_pins DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout2]
+create_generated_clock -name clk125        -master_clock ep_clk62p5 [get_nets DAPHNE_MEZ_SELFTRIGGER_V1_i/DAPHNE3/U0/endpoint_inst/clk125]
+
+create_generated_clock -name clk500_1        -master_clock local_clk62p5 [get_nets DAPHNE_MEZ_SELFTRIGGER_V1_i/DAPHNE3/U0/endpoint_inst/clk500]
+
+create_generated_clock -name clk125_1        -master_clock local_clk62p5 [get_nets DAPHNE_MEZ_SELFTRIGGER_V1_i/DAPHNE3/U0/endpoint_inst/clk125]
 
 #create_generated_clock -name clock -master_clock [get_clocks local_clk62p5] [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout1]
 #create_generated_clock -name mmcm1_clkfbout1 -master_clock [get_clocks local_clk62p5] [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkfbout]
@@ -55,21 +60,21 @@ create_clock -period 10.000 -name sysclk [get_cells -hierarchical -filter {NAME 
 #set_clock_groups -name exclusive_clk -physically_exclusive -group [get_clocks {clk500   clk_serdes_INTERNAL_DIVCLK2}]
 # define clock groups this is how we tell vivado which clocks are related and which are NOT
 #create_clock -period 6.400 -name eth_clk -add [get_clocks {clk_pl_2}]
-create_generated_clock -name clk125 -source [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -master_clock [get_cells -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] [get_cells -hierarchical -filter {NAME =~ *clk125*}]
+#create_generated_clock -name clk125 -source [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -master_clock [get_cells -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] [get_cells -hierarchical -filter {NAME =~ *clk125*}]
 
-set_false_path -from [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -to [get_cells   -hierarchical -filter {NAME =~ *mmcm1_clkout1*}]
+#set_false_path -from [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -to [get_cells   -hierarchical -filter {NAME =~ *mmcm1_clkout1*}]
 
 #set_false_path -from [get_clocks clk100] -to [get_clocks ep_clk62p5]
 #set_false_path -from [get_clocks ep_clk62p5] -to [get_clocks clock]
 #set_false_path -from [get_clocks ep_clk62p5] -to [get_clocks clk100]
-set_false_path -from [get_clocks  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -to [get_clocks {clk_pl_0}]
+#set_false_path -from [get_clocks  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -to [get_clocks {clk_pl_0}]
 #set_false_path -from [get_clocks {clk125_1}] -to [get_clocks {mmcm1_clkout}]
-set_false_path -from [get_clocks  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -to [get_clocks  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}]
-set_false_path -from [get_clocks clk_pl_0] -to [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}]
-set_false_path -from [get_clocks clk_pl_0] -to [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout1*}]
+#set_false_path -from [get_clocks  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}] -to [get_clocks  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}]
+#set_false_path -from [get_clocks clk_pl_0] -to [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout0*}]
+#set_false_path -from [get_clocks clk_pl_0] -to [get_cells  -hierarchical -filter {NAME =~ *mmcm1_clkout1*}]
 #set_false_path -from [get_clocks {clk_pl_3}] -to [get_clocks {clk_pl_2}]
 #set_false_path -from [get_clocks {mmcm1_clkout2}] -to [get_clocks {clk_pl_2}]
-set_false_path -from [get_clocks clk_pl_0] -to [get_clocks {clk125}]
+#set_false_path -from [get_clocks clk_pl_0] -to [get_clocks {clk125}]
 #set_false_path -from [get_clocks {mmcm1_clkout1}] -to [get_clocks {clk_pl_2}]
 #set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {clk_pl_2}]
 #set_false_path -from [get_clocks {clk_pl_1}] -to [get_clocks {eth_clk}]
@@ -85,14 +90,31 @@ set_false_path -from [get_clocks clk_pl_0] -to [get_clocks {clk125}]
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets DAPHNE_MEZ_SELFTRIGGER_V1_i/DAPHNE3/U0/endpoint_inst/pdts_endpoint_inst/pdts_endpoint_inst/rxcdr/bclk]
 
 #set_clock_groups -**async_default**  [get_clocks {mmcm1_clkout0_1}] to [get_clocks {mmcm1_clkout0}]
-#set_clock_groups -asynchronous -group [get_clocks {clk_pl_0}] -group [get_clocks {mmcm1_clkout0_1}]
-#set_clock_groups -asynchronous -group [get_clocks {clk_pl_0}] -group [get_clocks {mmcm1_clkout1}]
+set_clock_groups -asynchronous -group [get_clocks clk_pl_0] -group [get_clocks mmcm1_clkout0]
+set_clock_groups -asynchronous -group [get_clocks clk_pl_0] -group [get_clocks mmcm1_clkout1]
+set_clock_groups -asynchronous -group [get_clocks mmcm1_clkout1] -group [get_clocks mmcm1_clkout0]
 #set_clock_groups -asynchronous -group [get_clocks DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/pdts_endpoint_inst/pdts_endpoint_inst/rxcdr/clku] -group [get_clocks DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout1]
 #set_clock_groups -asynchronous -group [get_clocks {mmcm1_clkout0_1}] -group [get_clocks {DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout1}]
-#set_clock_groups -asynchronous -group [get_clocks {clk_pl_0}] -group [get_clocks {mmcm1_clkout1_1}]
+set_clock_groups -asynchronous -group [get_clocks clk_pl_0] -group [get_clocks mmcm0_clkout0]
 #set_clock_groups -asynchronous -group [get_clocks {DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout0}] -group [get_clocks {mmcm1_clkout1_1}]
-#set_clock_groups -asynchronous -group [get_clocks {clk_pl_0}] -group [get_clocks {mmcm1_clkout2}]
-#set_clock_groups -asynchronous -group [get_clocks {clk_pl_0}] -group [get_clocks {mmcm1_clkout2_1}]
+set_clock_groups -asynchronous -group [get_clocks clk_pl_0] -group [get_clocks mmcm0_clkout2]
+set_clock_groups -asynchronous -group [get_clocks clk_pl_0] -group [get_clocks mmcm0_clkout1]
+set_clock_groups -asynchronous -group [get_clocks clk_pl_0] -group [get_clocks clk125]
+
+set_clock_groups -asynchronous -group [get_clocks clk_pl_2] -group [get_clocks mmcm1_clkout0]
+set_clock_groups -asynchronous -group [get_clocks clk_pl_2] -group [get_clocks mmcm1_clkout1]
+set_clock_groups -asynchronous -group [get_clocks mmcm1_clkout0] -group [get_clocks clk_pl_2]
+set_clock_groups -asynchronous -group [get_clocks mmcm1_clkout1] -group [get_clocks clk_pl_2]
+
+set_clock_groups -asynchronous -group [get_clocks clk_pl_2] -group [get_clocks mmcm0_clkout2]
+set_clock_groups -asynchronous -group [get_clocks clk_pl_2] -group [get_clocks mmcm0_clkout1]
+set_clock_groups -asynchronous -group [get_clocks mmcm0_clkout2] -group [get_clocks clk_pl_2]
+set_clock_groups -asynchronous -group [get_clocks mmcm0_clkout1] -group [get_clocks clk_pl_2]
+
+set_clock_groups -asynchronous -group [get_clocks clk_pl_2] -group [get_clocks sysclk]
+set_clock_groups -asynchronous -group [get_clocks sysclk] -group [get_clocks clk_pl_2]
+
+
 #set_clock_groups -asynchronous -group [get_clocks {clku}] -group [get_clocks {clk100}]
 #set_clock_groups -asynchronous -group [get_clocks {mmcm1_clkout0_1_DIV4_INV}] -group [get_clocks {mmcm1_clkout1}]
 #set_clock_groups -asynchronous -group [get_clocks {mmcm1_clkout2_1}] -group [get_clocks {DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout1}]
@@ -212,6 +234,8 @@ set_property PACKAGE_PIN L7       [get_ports sysclk_p]
 set_property PACKAGE_PIN L6       [get_ports sysclk_n] 
 set_property IOSTANDARD LVDS [get_ports sysclk_p]
 set_property IOSTANDARD LVDS [get_ports sysclk_n]
+set_property DIFF_TERM true [get_ports sysclk_p]
+set_property DIFF_TERM true [get_ports sysclk_n]
 
 set_property PACKAGE_PIN AE5 [get_ports afe_clk_p];
 set_property PACKAGE_PIN AF5 [get_ports afe_clk_n];
@@ -268,10 +292,10 @@ set_property IOSTANDARD LVDS [get_ports tx0_tmg_p];
 set_property IOSTANDARD LVDS [get_ports tx0_tmg_n];
 set_property IOSTANDARD LVDS [get_ports rx0_tmg_p];
 set_property IOSTANDARD LVDS [get_ports rx0_tmg_n];
-#set_property DIFF_TERM TRUE [get_ports tx0_tmg_p]
-#set_property DIFF_TERM TRUE [get_ports tx0_tmg_n]
-#set_property DIFF_TERM TRUE [get_ports rx0_tmg_p
-#set_property DIFF_TERM TRUE [get_ports rx0_tmg_n]
+#set_property DIFF_TERM false [get_ports tx0_tmg_p]
+#set_property DIFF_TERM false [get_ports tx0_tmg_n]
+#set_property DIFF_TERM false [get_ports rx0_tmg_p
+#set_property DIFF_TERM false  [get_ports rx0_tmg_n]
 
 set_property IOSTANDARD LVTTL [get_ports sfp_tmg_tx_dis];
 set_property IOSTANDARD LVTTL [get_ports sfp_tmg_los];

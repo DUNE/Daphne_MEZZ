@@ -27,7 +27,7 @@ port(
             
           
     -- misc PL external connections
-    --sysclk100:   in std_logic;
+    sysclk100:   in std_logic;
     sysclk_p, sysclk_n: in  std_logic; -- 100MHz system clock from the clock generator chip (LVDS)
     fan_tach: in std_logic_vector(1 downto 0); -- fan tach speed sensors
     fan_ctrl: out std_logic; -- pwm fan speed control
@@ -348,6 +348,15 @@ port(
     DIN_DEBUG: out std_logic_vector (13 downto 0) ;
      VALID_DEBUG: out std_logic;
      LAST_DEBUG: out std_logic;
+     
+     -- endpoint debug signals
+     
+    clock_gen_debug: out std_logic ;
+    mmcm0_100MHZ_CLK_debug: out std_logic ;
+    ep_62p5MHZ_CLK_debug: out std_logic ;
+    F_OK_DEBUG: out std_logic ;    
+     SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+    CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
      Trigered_debug: out std_logic 
     --ep_mmcm1_reset: out std_logic
    
@@ -449,7 +458,7 @@ end component;
 component endpoint 
 port(
   sysclk_p, sysclk_n:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
-   -- sysclk100:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
+   --sysclk100:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
     -- external optical timing SFP link interface
 
     sfp_tmg_los: in std_logic; -- loss of signal
@@ -465,6 +474,15 @@ port(
     sclk200: out std_logic; -- system clock 200MHz
     --sclk100: out std_logic; -- system clock 100MHz
     timestamp: out std_logic_vector(63 downto 0); -- sync to clock 
+    
+    -- debug signals
+    
+    clock_gen_debug: out std_logic ;
+    mmcm0_100MHZ_CLK_debug: out std_logic ;
+    ep_62p5MHZ_CLK_debug: out std_logic ;
+    F_OK_DEBUG: out std_logic ;    
+    SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+    CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
     --mmc0_locked_debug: out std_logic ;
     --mmc1_locked_debug: out std_logic;
     --ep_stat_debug: out std_logic_vector (3 downto 0);
@@ -615,111 +633,7 @@ port(
   );
 end component;
 
--- 40 self-triggered senders + 10G Ethernet sender
 
---component core is
---port(
-    --link_id: std_logic_vector(5 downto 0); -- static header data
-    --slot_id: in std_logic_vector(3 downto 0);
-    --crate_id: in std_logic_vector(9 downto 0);
-    --detector_id: in std_logic_vector(5 downto 0);
-    --version: in std_logic_vector(5 downto 0);
-    ---DEFAULT_ext_mac_addr_0:in std_logic_vector (47 downto 0); -- Ethernet defaults point up to generics for now
-    --DEFAULT_ext_ip_addr_0:in std_logic_vector (31 downto 0);
-    -----DEFAULT_ext_port_addr_0:in std_logic_vector (15 downto 0);
-
-    --clock: in std_logic; -- master clock 62.5MHz
-    --reset: in std_logic; -- sync to clock
-    --timestamp: in std_logic_vector(63 downto 0); -- timestamp sync to clock
-    --enable: in std_logic_vector(39 downto 0); -- self trig sender channel enables
-    --forcetrig: in std_logic; -- momentary pulse to force all enabled senders to trigger
-    --threshold: in std_logic_vector(9 downto 0); -- counts below calculated baseline
-
-    --afe_data0: in std_logic_vector(13 downto 0);
-    --afe_data1: in std_logic_vector(13 downto 0);
-    --afe_data2: in std_logic_vector(13 downto 0);
-    --afe_data3: in std_logic_vector(13 downto 0);
-    --afe_data4: in std_logic_vector(13 downto 0);
-    --afe_data5: in std_logic_vector(13 downto 0);
-    --afe_data6: in std_logic_vector(13 downto 0);
-    --afe_data7: in std_logic_vector(13 downto 0);
-    --afe_data8: in std_logic_vector(13 downto 0);
-    --afe_data9: in std_logic_vector(13 downto 0);
-    --afe_data10: in std_logic_vector(13 downto 0);
-    --afe_data11: in std_logic_vector(13 downto 0);
-    --afe_data12: in std_logic_vector(13 downto 0);
-    --afe_data13: in std_logic_vector(13 downto 0);
-    --afe_data14: in std_logic_vector(13 downto 0);
-   -- afe_data15: in std_logic_vector(13 downto 0);
-    --afe_data16: in std_logic_vector(13 downto 0);
-    --afe_data17: in std_logic_vector(13 downto 0);
-    --afe_data18: in std_logic_vector(13 downto 0);
-    --afe_data19: in std_logic_vector(13 downto 0);
-    --afe_data20: in std_logic_vector(13 downto 0);
-    --afe_data21: in std_logic_vector(13 downto 0);
-    --afe_data22: in std_logic_vector(13 downto 0);
-    --afe_data23: in std_logic_vector(13 downto 0);
-    --afe_data24: in std_logic_vector(13 downto 0);
-    --afe_data25: in std_logic_vector(13 downto 0);
-    --afe_data26: in std_logic_vector(13 downto 0);
-    --afe_data27: in std_logic_vector(13 downto 0);
-    --afe_data28: in std_logic_vector(13 downto 0);
-    --afe_data29: in std_logic_vector(13 downto 0);
-    --afe_data30: in std_logic_vector(13 downto 0);
-    --afe_data31: in std_logic_vector(13 downto 0);
-    --afe_data32: in std_logic_vector(13 downto 0);
-    --afe_data33: in std_logic_vector(13 downto 0);
-    --afe_data34: in std_logic_vector(13 downto 0);
-    --afe_data35: in std_logic_vector(13 downto 0);
-    --afe_data36: in std_logic_vector(13 downto 0);
-    --afe_data37: in std_logic_vector(13 downto 0);
-    --afe_data38: in std_logic_vector(13 downto 0);
-    --afe_data39: in std_logic_vector(13 downto 0);
- 
-    --S_AXI_ACLK: in std_logic; -- 10G Ethernet sender AXI-Lite interface
-    --S_AXI_ARESETN: in std_logic;
-    --S_AXI_AWADDR: in std_logic_vector(31 downto 0);
-    --S_AXI_AWPROT: in std_logic_vector(2 downto 0);
-    --S_AXI_AWVALID: in std_logic;
-    --S_AXI_AWREADY: out std_logic;
-    --S_AXI_WDATA: in std_logic_vector(31 downto 0);
-    --S_AXI_WSTRB: in std_logic_vector(3 downto 0);
-    --S_AXI_WVALID: in std_logic;
-    --S_AXI_WREADY: out std_logic;
-    --S_AXI_BRESP: out std_logic_vector(1 downto 0);
-    --S_AXI_BVALID: out std_logic;
-    --S_AXI_BREADY: in std_logic;
-    --S_AXI_ARADDR: in std_logic_vector(31 downto 0);
-    --S_AXI_ARPROT: in std_logic_vector(2 downto 0);
-    --S_AXI_ARVALID: in std_logic;
-   --S_AXI_ARREADY: out std_logic;
-    --S_AXI_RDATA: out std_logic_vector(31 downto 0);
-    --S_AXI_RRESP: out std_logic_vector(1 downto 0);
-    --S_AXI_RVALID: out std_logic;
-    --S_AXI_RREADY: in std_logic;
-
-
-
-    --threshold axi
-    
-    --AXI_IN: in AXILITE_INREC;
-    --AXI_OUT: out AXILITE_OUTREC;
-    --eth_clk_p: in std_logic; -- external MGT refclk LVDS 156.25MHz
-    --eth_clk_n: in std_logic; 
-
-    --eth0_rx_p: in std_logic; -- external SFP+ transceiver
-    --eth0_rx_n: in std_logic;
-    --eth0_tx_p: out std_logic;
-    --eth0_tx_n: out std_logic;
-    --eth0_tx_dis: out std_logic;
-    
-        --output_spybuff-----
-    --out_buff_data: out array_2x64_type;
-    --out_buff_trig: out std_logic ;
-     --VALID_DEBUG: out std_logic_vector(1 downto 0);
-     --LAST_DEBUG: out std_logic_vector(1 downto 0)
---);
---end component;
 
 signal afe_p_array, afe_n_array: array_5x9_type;
 signal din_full_array: array_5x9x16_type;
@@ -902,6 +816,12 @@ signal valid_debug_reg: std_logic_vector (1 downto 0) ;
 signal  last_debug_reg :  std_logic_vector (1 downto 0) ; 
 signal din_debug_reg: std_logic_vector (13 downto 0);
 signal trigered_debug_reg: std_logic ;
+
+    
+ signal  f_ok,sysclk_ibuf,mmcm0_clkout2,ep_clk62p5: std_logic ;
+signal sctr, cctr: std_logic_vector (15 downto 0);
+         
+
 begin
 
 
@@ -1244,6 +1164,18 @@ port map(
     clk125          => clk125,
     timestamp       => timestamp,
     
+    
+    
+    -- endpoint debug signals
+    
+    
+ F_OK_DEBUG       =>f_ok,
+ SCTR_DEBUG=> sctr,
+ CCTR_DEBUG => cctr,
+clock_gen_debug       =>sysclk_ibuf,
+mmcm0_100MHZ_CLK_debug       =>mmcm0_clkout2,
+ep_62p5MHZ_CLK_debug       =>ep_clk62p5,   
+    
    -- mmc0_locked_debug => ep_mmcm0_locked, 
     --mmc1_locked_debug => ep_mmcm1_locked,
     --mclk            => clk_62p5_debug,
@@ -1450,46 +1382,7 @@ port map(
     eth0_tx_dis => eth0_tx_dis,
     
     
-    --afe_data0 => din_array(0)(0),
-    --afe_data1 => din_array(0)(1),
-    --afe_data2 => din_array(0)(2),
-    --afe_data3 => din_array(0)(3),
-    --afe_data4 => din_array(0)(4),
-    --afe_data5 => din_array(0)(5),
-    --afe_data6 => din_array(0)(6),
-    --afe_data7 => din_array(0)(7),
-    --afe_data8 => din_array(1)(0),
-    --afe_data9 => din_array(1)(1),
-    --afe_data10 => din_array(1)(2),
-    --afe_data11 => din_array(1)(3),
-    --afe_data12 => din_array(1)(4),
-    --afe_data13 => din_array(1)(5),
-    --afe_data14 => din_array(1)(6),
-    --afe_data15 => din_array(1)(7),
-    --afe_data16 => din_array(2)(0),
-    --afe_data17 => din_array(2)(1),
-    --afe_data18 => din_array(2)(2),
-    --afe_data19 => din_array(2)(3),
-    --afe_data20 => din_array(2)(4),
-    --afe_data21 => din_array(2)(5),
-    --afe_data22 => din_array(2)(6),
-    --afe_data23 => din_array(2)(7),
-    --afe_data24 => din_array(3)(0),
-    --afe_data25 => din_array(3)(1),
-    --afe_data26 => din_array(3)(2),
-    --afe_data27 => din_array(3)(3),
-    --afe_data28 => din_array(3)(4),
-    --afe_data29 => din_array(3)(5),
-    --afe_data30 => din_array(3)(6),
-    --afe_data31 => din_array(3)(7),
-    --afe_data32 => din_array(4)(0),
-    --afe_data33 => din_array(4)(1),
-    --afe_data34 => din_array(4)(2),
-    --afe_data35 => din_array(4)(3),
-    --afe_data36 => din_array(4)(4),
-    --afe_data37 => din_array(4)(5),
-    --afe_data38 => din_array(4)(6),
-    --afe_data39 => din_array(4)(7), 
+
         --output_spybuff-----
     out_buff_data =>  out_buff_data_reg,
     out_buff_trig =>   out_buff_trig_reg,
@@ -1528,6 +1421,15 @@ outbuff_isnt: entity work.outspybuff
     out_buff_trig <= out_buff_trig_reg;
     out_buff_clk <= clock;
     out_buff_data <= out_buff_data_reg(0);
+    
+   -- endpoint debug signals
+   
+ F_OK_DEBUG <= f_ok;
+ SCTR_DEBUG <= sctr;
+ cCTR_DEBUG <= cctr;
+clock_gen_debug  <= sysclk_ibuf;
+mmcm0_100MHZ_CLK_debug   <= mmcm0_clkout2;
+ep_62p5MHZ_CLK_debug   <=   ep_clk62p5 ;
     
     
     
