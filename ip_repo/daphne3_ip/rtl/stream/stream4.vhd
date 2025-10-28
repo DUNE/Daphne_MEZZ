@@ -7,13 +7,15 @@
 -- dense packed into a block of 7 64-bit data words.
 --
 -- an output record is:
--- number of 64-bit header words = 29 (timestamp + 28 reserved)
+-- number of 64-bit header words = 5 (timestamp + 4 reserved)
 -- number of 64-bit data words = BLOCKS_PER_RECORD * 7 
 --
 -- The output record contains a significant number of header words.
 -- If BLOCKS_PER_RECORD is set too low, the header words begin to dominate
 -- the output bandwidth and data will start to back up in the FIFO.
 -- Minimum BLOCKS_PER_RECORD is about 30.
+--
+-- To disable this sender, set all four channel_id bytes to 0xFF.
 
 -- Jamieson Olsen <jamieson@fnal.gov>
 
@@ -27,10 +29,10 @@ use xpm.vcomponents.all;
 use work.daphne3_package.all;
 
 entity stream4 is
-generic( BLOCKS_PER_RECORD: integer := 128 ); 
+generic( BLOCKS_PER_RECORD: integer := 35 ); 
 port(
     clock: in std_logic;
-    areset: in std_logic;
+    reset: in std_logic;
     version: in std_logic_vector(3 downto 0);
     channel_id: in array_4x8_type; 
     ts: in std_logic_vector(63 downto 0);
@@ -43,7 +45,7 @@ end stream4;
 
 architecture stream4_arch of stream4 is
 
-    signal reset: std_logic := '1';
+    signal reset_clean: std_logic := '1';
     signal din_reg: std_logic_vector(111 downto 0);
     signal ts_reg: std_logic_vector(63 downto 0) := (others => '0');
     signal pack_reg: std_logic_vector(64 downto 0) := (others => '0');
@@ -61,6 +63,8 @@ architecture stream4_arch of stream4 is
     signal last_i, last_reg: std_logic := '0';
     signal dout_i, dout_reg: std_logic_vector(63 downto 0) := (others=>'0');
 
+    signal sender_enable: std_logic := '1';
+
     -- the holdoff state delays the FIFO read logic, thus allowing the FIFO
     -- to fill up a bit more. when this constant is tuned properly, the FIFO will
     -- go empty a just few times, but only near the end of the record. Note that 
@@ -68,36 +72,42 @@ architecture stream4_arch of stream4 is
     -- the VALID output. This parameter is largely cosmetic... 
     -- This parameter is hand tuned in simulation, some good values are:
     -- 
+    -- BLOCKS_PER_RECORD = 32  --> HOLDOFFCOUNT = 0
     -- BLOCKS_PER_RECORD = 64  --> HOLDOFFCOUNT = 32
     -- BLOCKS_PER_RECORD = 80  --> HOLDOFFCOUNT = 48
     -- BLOCKS_PER_RECORD = 96  --> HOLDOFFCOUNT = 54
     -- BLOCKS_PER_RECORD = 128 --> HOLDOFFCOUNT = 96
 
-    constant HOLDOFFCOUNT: integer range 0 to 1023 := 32;  
+    constant HOLDOFFCOUNT: integer range 0 to 1023 := 24;  
 
 begin
 
     -- cleanup the aysnc reset pulse
 
-    reset_proc: process(clock, areset)
+    reset_proc: process(clock, reset)
     begin
-        if (areset='1') then
-            reset <= '1'; -- async immediate assertion
+        if (reset='1') then
+            reset_clean <= '1'; -- async immediate assertion
         elsif rising_edge(clock) then
-            if (areset='0') then
-                reset <= '0'; -- sync release
+            if (reset='0') then
+                reset_clean <= '0'; -- sync release
             else
-                reset <= '1';
+                reset_clean <= '1';
             end if;
         end if; 
     end process;
+
+    -- to disable this sender, set all four channel_id bytes to 0xFF
+    -- (this is done in the input mux module)
+
+    sender_enable <= '0' when (channel_id(0)=X"FF" and channel_id(1)=X"FF" and channel_id(2)=X"FF" and channel_id(3)=X"FF") else '1';
 
     -- gearbox / packer pipeline runs continuously...
 
     packer_proc: process(clock) 
     begin
         if rising_edge(clock) then
-            if (reset='1') then
+            if (reset_clean='1') then
                 din_reg <= (others=>'0');
                 ts_reg <= (others=>'0');
                 pack_reg <= (others=>'0');
@@ -207,7 +217,7 @@ begin
        injectdbiterr => '0',
        injectsbiterr => '0',
        rd_en => FIFO_rd_en,
-       rst => reset,
+       rst => reset_clean,
        sleep => '0',
        wr_clk => clock,
        wr_en => FIFO_wr_en
@@ -230,7 +240,7 @@ begin
     fsm_proc: process(clock)
     begin
         if rising_edge(clock) then
-            if (reset='1') then
+            if (reset_clean='1') then
                 state <= rst;
             else
                 case state is
@@ -256,7 +266,7 @@ begin
                     end if;
 
                 when header => 
-                    if (wordcount=28) then
+                    if (wordcount=4) then
                         state <= data;
                         wordcount <= 0;
                     else
@@ -295,10 +305,10 @@ begin
                '0';
 
     dout_i <= FIFO_dout(63 downto 0)                       when (state=header and wordcount=0) else -- this is the timestamp header word
-              (channel_id(0) & version & X"0000000000000") when (state=header and wordcount=1) else -- ch0 header word
-              (channel_id(1) & version & X"0000000000000") when (state=header and wordcount=8) else -- ch1 header word
-              (channel_id(2) & version & X"0000000000000") when (state=header and wordcount=15) else -- ch2 header word
-              (channel_id(3) & version & X"0000000000000") when (state=header and wordcount=22) else -- ch3 header word
+              (channel_id(0) & version & X"0000000000000") when (state=header and wordcount=1) else -- ch0 header word 
+              (channel_id(1) & version & X"0000000000000") when (state=header and wordcount=2) else -- ch1 header word
+              (channel_id(2) & version & X"0000000000000") when (state=header and wordcount=3) else -- ch2 header word
+              (channel_id(3) & version & X"0000000000000") when (state=header and wordcount=4) else -- ch3 header word
               FIFO_dout(63 downto 0)                       when (state=data and FIFO_empty='0' and FIFO_dout(64)='0') else -- normal data pass thru
               (others=>'0');
 
@@ -307,9 +317,15 @@ begin
     regout_proc: process(clock)
     begin
         if rising_edge(clock) then
-            valid_reg <= valid_i;
-            dout_reg  <= dout_i;
-            last_reg  <= last_i;
+            if (sender_enable='1') then -- normal running
+                valid_reg <= valid_i;
+                dout_reg  <= dout_i;
+                last_reg  <= last_i;
+            else -- disable output
+                valid_reg <= '0';
+                dout_reg  <= (others=>'0');
+                last_reg  <= '0';
+            end if;
         end if;
     end process regout_proc;
 

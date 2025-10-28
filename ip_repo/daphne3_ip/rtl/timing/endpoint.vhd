@@ -26,7 +26,7 @@ use unisim.vcomponents.all;
 entity endpoint is
 port(
 
-    --sysclk_p, sysclk_n:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
+    sysclk_p, sysclk_n:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
     sysclk100:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
     -- external optical timing SFP link interface
 
@@ -118,6 +118,7 @@ port(
     ep_reset: out std_logic;
     ep_addr: out std_logic_vector(15 downto 0);
     mmcm1_reset: out std_logic;
+    mmcm0_reset: out std_logic;
     use_ep: out std_logic
 );
 end component;
@@ -131,7 +132,7 @@ signal mmcm0_clkout2: std_logic;
 signal local_clk62p5: std_logic;
 signal clk100_i: std_logic;
 signal rx0_tmg, tx0_tmg: std_logic;
-
+signal mmcm0_reset: std_logic;
 signal ep_clk62p5: std_logic;
 
 signal mmcm1_clkfbout, mmcm1_clkfbout_buf: std_logic;
@@ -155,8 +156,8 @@ reset_async <= not S_AXI_ARESETN;
 
 -- if using external LVDS 100MHz sysclk, receive it with IBUFDS.
 
---sysclk_ibufds_inst : IBUFGDS 
---port map(O => sysclk_ibuf, I => sysclk_p, IB => sysclk_n);
+sysclk_ibufds_inst : IBUFGDS 
+port map(O => sysclk_ibuf, I => sysclk_p, IB => sysclk_n);
 
 mmcm0_inst: MMCME2_ADV
 generic map(
@@ -197,7 +198,7 @@ port map(
     CLKOUT5             => open,
     CLKOUT6             => open,
     CLKFBIN             => mmcm0_clkfbout_buf,
-    CLKIN1              => sysclk100, -- 100 MHz system clock
+    CLKIN1              => sysclk_ibuf,--sysclk100, -- 100 MHz system clock
     CLKIN2              => '0',
     CLKINSEL            => '1', -- high to use CLKIN1
     DADDR               => (others=>'0'),
@@ -215,7 +216,7 @@ port map(
     CLKINSTOPPED        => open,
     CLKFBSTOPPED        => open,
     PWRDWN              => '0',
-    RST                 => reset_async
+    RST                 => mmcm0_reset
 );
 
 mmcm0_clkfb_inst: BUFG port map( I => mmcm0_clkfbout, O => mmcm0_clkfbout_buf);
@@ -407,6 +408,7 @@ port map(
     ep_reset => ep_reset,
     ep_addr => ep_addr,
     mmcm1_reset => mmcm1_reset,
+    mmcm0_reset => mmcm0_reset,
     use_ep => use_ep
 );
 

@@ -277,8 +277,8 @@ It is strongly recommended to NOT use the Vivado GUI (Project Mode) to build thi
         ```tcl
         $ cd src/xilinx
         $ set git_sha [exec git rev-parse --short=7 HEAD]
-        $ set aux_git_sha [string range $git_sha 0 0]
-        $ set v_git_sha "4'h$aux_git_sha"
+        $ set min_git_sha [string range $git_sha 0 0]
+        $ set bd_git_sha "4'h$min_git_sha"
         $ source daphne3_bd_gen.tcl
         $ start_gui
         ```

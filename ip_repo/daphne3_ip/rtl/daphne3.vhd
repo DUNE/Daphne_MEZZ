@@ -32,7 +32,7 @@ port(
           
     -- misc PL external connections
     sysclk100:   in std_logic;
-    --sysclk_p, sysclk_n: in  std_logic; -- 100MHz system clock from the clock generator chip (LVDS)
+    sysclk_p, sysclk_n: in  std_logic; -- 100MHz system clock from the clock generator chip (LVDS)
     fan_tach: in std_logic_vector(1 downto 0); -- fan tach speed sensors
     fan_ctrl: out std_logic; -- pwm fan speed control
     stat_led: out std_logic_vector(5 downto 0); -- general status LEDs
@@ -455,7 +455,7 @@ end component;
 
 component endpoint 
 port(
-  -- sysclk_p, sysclk_n:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
+   sysclk_p, sysclk_n:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
     sysclk100:   in std_logic;  -- 100MHz constant system clock from PS or oscillator
     -- external optical timing SFP link interface
 
@@ -570,7 +570,7 @@ port(
 	S_AXI_AWREADY	: out std_logic;
 	S_AXI_WDATA	    : in std_logic_vector(31 downto 0);
 	S_AXI_WSTRB	    : in std_logic_vector(3 downto 0);
-	S_AXI_WVALID	: in std_logic;
+	S_AXI_WVALID	: in std_logic; 
 	S_AXI_WREADY	: out std_logic;
 	S_AXI_BRESP	    : out std_logic_vector(1 downto 0);
 	S_AXI_BVALID	: out std_logic;
@@ -800,7 +800,7 @@ signal din_debug_reg: std_logic_vector (13 downto 0);
 signal trigered_debug_reg: std_logic ;
 
 signal input_mux:array_8x4x14_type;
-signal input_mux_data: array_40x14_type;
+signal input_mux_data: array_5x9x16_type;
 signal channel_id:array_8x4x8_type;
 signal stream_core_dout:array_8x64_type;
 signal stream_core_valid: std_logic_vector(7 downto 0);
@@ -1161,8 +1161,8 @@ port map(
 
 endpoint_inst: endpoint
 port map(
-   -- sysclk_p        => sysclk_p,
-    --sysclk_n        => sysclk_n,
+    sysclk_p        => sysclk_p,
+    sysclk_n        => sysclk_n,
     sysclk100     => sysclk100,
     sfp_tmg_los     => sfp_tmg_los,
     rx0_tmg_p       => rx0_tmg_p,
@@ -1327,20 +1327,20 @@ gena_din: for a in 4 downto 0 generate
 genc_din: for c in 7 downto 0 generate
 
     din_array(a)(c)(13 downto 0) <= din_full_array(a)(c)(13 downto 0);
-    input_mux_data(a*8 + c) <= din_array(a)(c);
+   -- input_mux_data <= din_array(a)(c);
 
 end generate genc_din;
 end generate gena_din;
 
 
-
+--input_mux_data <= din_full_array;
 -- input mux
 
 
 input_mux_inst: entity work.stream_input_mux
     port map (
     clock =>  clock,
-    din  =>  input_mux_data,
+    din  =>  din_full_array,
     dout =>  input_mux,
     muxctrl =>  channel_id,
     AXI_IN =>  AXI_IN,
@@ -1355,7 +1355,7 @@ core_inst: entity work.stream_core
 port map (
 
     clock 	=>  clock,-- 62.5MHz master clock
-    areset	=>   '0',
+    reset	=>   '0',
     ts 	=>  timestamp,-- timestamp
     
     version => version,
@@ -1495,7 +1495,7 @@ port map(
     out_buff_clk  <= clock;
     out_buff_data <= out_buff_data_reg(0);
     
-    DIN_DEBUG <= input_mux_data(0);
+   -- DIN_DEBUG <= input_mux_data(0)(0));
      VALID_DEBUG <= valid_debug_reg(0);
      LAST_DEBUG <= last_debug_reg(0);
          

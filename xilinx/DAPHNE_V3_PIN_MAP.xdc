@@ -1,15 +1,5 @@
 
 
-#create_generated_clock -name ep_clk2x [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/pdts_endpoint_inst/pdts_endpoint_inst/rxcdr/clku2x]
-#create_generated_clock -name mmcm1_clkout0 -master_clock [get_clocks ep_clk62p5] [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout0_BUFGCE]
-#create_generated_clock -name clk500 -master_clock [get_clocks local_clk62p5] [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout0_BUFGCE]
-#create_generated_clock -name clk125 -master_clock [get_clocks clk500_1] [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/clk125]
-#create_generated_clock -name clk500_1 -master_clock [get_clocks ep_clk62p5] [get_nets DAPHNE_V3_F4_1_i/DAPHNE3_0/U0/endpoint_inst/mmcm1_clkout0_BUFGCE]
-#set_false_path -from [get_clocks clk500_1] -to [get_clocks clock]
-#set_false_path -from [get_clocks clk500] -to [get_clocks clock]
-#set_false_path -from [get_clocks clk500] -to [get_clocks clk500_1]
-#set_false_path -from [get_clocks clk_pl_0] -to [get_clocks clk500]
-
 #J.OLSEN
 # J.NTAHOTURI, T.DELINE, M.MARCHAN
 # this file contains all signals locations and voltage properties
@@ -21,7 +11,7 @@
 # DAPHNE3 PL TIMING constraints
 
 # define primary clocks...
-
+create_clock -period 10.000 -name sysclk [ get_ports sysclk_p]
 #create_clock -period 10.000 -name sysclk100 -add [get_pins -hierarchical -filter NAME=~\"*sysclk100*\"]
 #create_clock -period 16.000 -name rx_tmg_clk -add [get_ports rx0_tmg_p]
 #create_clock -period 10.000 -name clk_pl_2 [get_pins {DAPHNE_V3_F4_1_i/ZYNQ_PS/pl_clk2}]
@@ -63,8 +53,10 @@ set_false_path -from [get_clocks -regexp .*mmcm1_clkout0.*] -to [get_clocks -reg
 #set_false_path -from [get_clocks ep_clk62p5] -to [get_clocks clock]
 #set_false_path -from [get_clocks ep_clk62p5] -to [get_clocks clk100]
 set_false_path -from [get_clocks {mmcm1_clkout1}] -to [get_clocks {clk_pl_0}]
+set_false_path -from [get_clocks {mmcm1_clkout1}] -to [get_clocks {clk_pl_2}]
 #set_false_path -from [get_clocks {clk125_1}] -to [get_clocks {mmcm1_clkout}]
 set_false_path -from [get_clocks {mmcm1_clkout0}] -to [get_clocks {mmcm1_clkout0}]
+set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {mmcm1_clkout1}]
 set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {mmcm1_clkout1}]
 #set_false_path -from [get_clocks {clk_pl_3}] -to [get_clocks {clk_pl_2}]
 #set_false_path -from [get_clocks {mmcm1_clkout2}] -to [get_clocks {clk_pl_2}]
@@ -119,7 +111,7 @@ set_false_path -from [get_clocks {clk_pl_0}] -to [get_clocks {clk125}]
 #set_false_path -from [get_pins daq_out_param_reg_reg[*]/C]
 #set_false_path -from [get_pins core_inst/input_inst/*select_reg_reg*/C]
 
-
+set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets DAPHNE_MEZ_STREAMING_V1_i/DAPHNE3/U0/endpoint_inst/pdts_endpoint_inst/pdts_endpoint_inst/rxcdr/bclk]
 
 
 
@@ -206,13 +198,16 @@ set_property PACKAGE_PIN Y5       [get_ports eth_clk_n] ;  # pin location SOM240
 #set_property IOSTANDARD LVDS [get_ports GTH0_REFCLK_P];
 #set_property IOSTANDARD LVDS [get_ports GTH0_REFCLK_N];
 
+set_property PACKAGE_PIN L7       [get_ports sysclk_p] 
+set_property PACKAGE_PIN L6       [get_ports sysclk_n] 
+set_property IOSTANDARD LVDS [get_ports sysclk_p]
+set_property IOSTANDARD LVDS [get_ports sysclk_n]
+set_property DIFF_TERM true [get_ports sysclk_p]
+set_property DIFF_TERM true [get_ports sysclk_n]
 
 #set_property PACKAGE_PIN F23      [get_ports {GTR_REFCLK_P}]   # pin location SOM240_1_C47
 #set_property PACKAGE_PIN F24      [get_ports {GTR_REFCLK_N}]   # pin location SOM240_1_C48
-#set_property PACKAGE_PIN L1       [get_ports CLK100_P] 
-#set_property PACKAGE_PIN K1       [get_ports CLK100_N] 
-#set_property IOSTANDARD LVDS [get_ports CLK100_P]
-#set_property IOSTANDARD LVDS [get_ports CLK100_N]
+
 
 set_property PACKAGE_PIN AE5 [get_ports afe_clk_p];
 set_property PACKAGE_PIN AF5 [get_ports afe_clk_n];

@@ -14,7 +14,8 @@ use work.pdts_clock_defs.all;
 
 entity pdts_ep_sm is
 	generic(
-		SCLK_FREQ: real;
+		SCLK_FREQ: real:=100.00;
+		CLK_FREQ: real:=62.5;
 		SKIP_FREQ: boolean;
 		SKIP_TSTAMP: boolean -- Skip the timestamp initialisation step
 	);
