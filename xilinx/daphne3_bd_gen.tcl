@@ -4,6 +4,15 @@
 
 # general setup stuff
 set blockDesignDir ../bd
+
+# check if the block design folder already exists
+if {[file exists $blockDesignDir]} {
+    # block design folder already exists, so delete it
+    puts "INFO: Block Design files already exists at $blockDesignDir."
+    puts "INFO: Deleting older version of Block Design..."
+    file delete -force $blockDesignDir
+}
+# create the new folder to populate later with the design
 file mkdir $blockDesignDir 
 
 # configure the current in-memory project
@@ -14,7 +23,7 @@ set_property DEFAULT_LIB work [current_project]
 
 # make sure to add the new DAPHNE3 IP before generating the Block Design
 # this helps to avoid errors or not finding the IP
-source daphne3_ip_gen.tcl
+source -notrace daphne3_ip_gen.tcl
 
 # update IP catalog
 set_property IP_REPO_PATHS ../ip_repo [current_project]
@@ -33,40 +42,40 @@ set list_cells [get_bd_cells -quiet]
 
 if {${designName} eq ""} {
     # when the design name is not set
-    set errMsg "Please set the variable <designName> to a non-empty value."
+    set errMsg "ERROR: Please set the variable <designName> to a non-empty value."
     set nRet 1
 } elseif {${cur_design} ne "" && ${list_cells} eq ""} {
     # when the design is opened and is empty and names same
     # when the design is opened and is empty, but the names are different, and the designName is not in the proejct
     # when the design is opened and is empty, but the names are different, and the designName exists in the project
     if {$cur_design ne $designName} {
-        puts "Changing value of <designName> from <$designName> to <$cur_design> since current design is empty."
+        puts "INFO: Changing value of <designName> from <$designName> to <$cur_design> since current design is empty."
         set designName [get_property NAME $cur_design]
     }
     puts "Constructing design in IPI design <$cur_design>..."
 } elseif {${cur_design} ne "" && $list_cells ne "" && $cur_design eq $designName} {
     # when the design is opened and has components and same names
-    set errMsg "Design <$designName> already exists in your project, please set the variable <designName> to another value."
+    set errMsg "ERROR: Design <$designName> already exists in your project, please set the variable <designName> to another value."
     set nRet 1
 } elseif {[get_files -quiet ${designName}.bd] ne ""} {
     # when current opened design, it has components, but different names and the designName already exists in project
     # when there is no opened design, but the designName exists in project
-    set errMsg "Design <$designName> already exists in your project, please set the variable <designName> to another value."
+    set errMsg "ERROR: Design <$designName> already exists in your project, please set the variable <designName> to another value."
     set nRet 2
 } else {
     # when no opened design, designName not in project
     # when current design is openes, has components, but different names, and the designName is not in the project
-    puts "Currently there is no design <$designName> in project, so creating one..."
+    puts "INFO: Currently there is no design <$designName> in project, so creating one..."
 
     # command to create the block design
     create_bd_design -dir $blockDesignDir $designName
 
-    puts "Making design <$designName> as current_bd_design."
+    puts "INFO: Making design <$designName> as current_bd_design."
     current_bd_design $designName
 }
 
 # inform the user of the name of the design
-puts "Currently the variable <designName> is equal to \"$designName\"."
+puts "INFO: Currently the variable <designName> is equal to \"$designName\"."
 
 if {$nRet != 0} {
     catch {common::send_gid_msg -ssname BD::TCL -id 2006 -severity "ERROR" $errMsg}
@@ -130,8 +139,8 @@ set AFE0_MISO [create_bd_port -dir I AFE0_MISO]
 set AFE12_AFE_MISO [create_bd_port -dir I AFE12_AFE_MISO]
 set AFE34_AFE_MISO [create_bd_port -dir I AFE34_AFE_MISO]
 set trig_IN [create_bd_port -dir I trig_IN]
-set GTH0_REFCLK_N [create_bd_port -dir I -type clk GTH0_REFCLK_N]
-set GTH0_REFCLK_P [create_bd_port -dir I -type clk GTH0_REFCLK_P]
+set GTH0_REFCLK_N [create_bd_port -dir I -type clk -freq_hz 100000000 GTH0_REFCLK_N]
+set GTH0_REFCLK_P [create_bd_port -dir I -type clk -freq_hz 100000000 GTH0_REFCLK_P]
 set sysclk_n [create_bd_port -dir I sysclk_n]
 set sysclk_p [create_bd_port -dir I sysclk_p]
 set RX0_GTH_N [create_bd_port -dir I RX0_GTH_N]
