@@ -46,7 +46,7 @@ puts "INFO: passing git commit number $v_git_sha to top level generic"
 
 # create the block design
 # this command also verifies if the block design already exists, if so, it deletes it in order to generate a newer version
-source ./daphne3_bd_gen.tcl
+source -notrace ./daphne3_bd_gen.tcl
 read_bd ../bd/DAPHNE_MEZ_SELFTRIGGER_V1/DAPHNE_MEZ_SELFTRIGGER_V1.bd
 
 # # verify if the block design exists, if not, create it

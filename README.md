@@ -41,6 +41,16 @@ $ cd src/xilinx
 $ vivado -mode tcl -source vivado_batch.tcl
 ```
 
+You can also run the command with the -notrace argument to keep the output of the terminal cleaner, only status of the process will be displayed on this case:
+
+```bash
+Windows:
+$ source -notrace vivado_batch.tcl
+
+Linux: 
+$ vivado -mode tcl -source vivado_batch.tcl -notrace
+```
+
 After Vivado completes the process, the output reports, bit/bin and XSA files and overlay files can be found in the `src/xilinx/output` directory.
 
 ## How do I know the building process is working?
