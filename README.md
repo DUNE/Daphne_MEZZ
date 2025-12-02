@@ -36,9 +36,19 @@ On Linux:
 
 ```bash
 $ source <install_path_to>/Vitis/<version>/settings64.sh
-4 source <install_path_to_petalinux>/settings64.sh
+$ source <install_path_to_petalinux>/settings64.sh
 $ cd src/xilinx
 $ vivado -mode tcl -source vivado_batch.tcl
+```
+
+You can also run the command with the -notrace argument to keep the output of the terminal cleaner, only status of the process will be displayed on this case:
+
+```bash
+Windows:
+$ source -notrace vivado_batch.tcl
+
+Linux: 
+$ vivado -mode tcl -source vivado_batch.tcl -notrace
 ```
 
 After Vivado completes the process, the output reports, bit/bin and XSA files and overlay files can be found in the `src/xilinx/output` directory.
@@ -107,7 +117,7 @@ Click on every arrow and a general description of the folder/file will appear.
 
 <details>
 <summary>📂 <code>bd/</code></summary>
-Folder that stores all of the files related to the IP cores used in the block design, as well as their wrappers, constraints, synthesis files, IP cores xci description files, and so on. It is created once you run the 📄 <code>daphne3_bd_gen.tcl</code> script, and this folder also contains the 📄 <code>DAPHNE_V3_F4_3.bd</code> and 📄 <code>DAPHNE_V3_F4_3.bda</code> files, so this is the path that can be used to read the full design. This folder is automatically generated and it is not committed to Github.
+Folder that stores all of the files related to the IP cores used in the block design, as well as their wrappers, constraints, synthesis files, IP cores xci description files, and so on. It is created once you run the 📄 <code>daphne3_bd_gen.tcl</code> script, and this folder also contains the 📄 <code>DAPHNE_MEZ_STREAMING_V1.bd</code> and 📄 <code>DAPHNE_MEZ_STREAMING_V1.bda</code> files, so this is the path that can be used to read the full design. This folder is automatically generated and it is not committed to Github.
 </details>
 
 <details>
@@ -230,7 +240,7 @@ It is strongly recommended to NOT use the Vivado GUI (Project Mode) to build thi
 
         ```tcl
         $ cd src/xilinx
-        $ source daphne3_ip_gen.tcl
+        $ vivado -mode tcl -source daphne3_ip_gen.tcl -notrace
         $ ipx::edit_ip_in_project ../ip_repo/daphne3_ip/component.xml
         $ start_gui
         ```
@@ -256,12 +266,12 @@ It is strongly recommended to NOT use the Vivado GUI (Project Mode) to build thi
 
         ```tcl
         $ cd src/xilinx
-        $ source daphne3_ip_gen.tcl
-        $ source axilite_ram_ip_gen.tcl                               <---- This one can be skipped if this IP is not in the design
+        $ vivado -mode tcl -source daphne3_ip_gen.tcl -notrace
+        $ vivado -mode tcl -source axilite_ram_ip_gen.tcl -notrace <---- This one can be skipped if this IP is not in the design
         $ set_property IP_REPO_PATHS ../ip_repo [current_project]
         $ update_ip_catalog 
-        $ read_bd ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
-        $ open_bd_design ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
+        $ read_bd ../bd/DAPHNE_MEZ_STREAMING_V1/DAPHNE_MEZ_STREAMING_V1.bd
+        $ open_bd_design ../bd/DAPHNE_MEZ_STREAMING_V1/DAPHNE_MEZ_STREAMING_V1.bd
         $ upgrade_ip [get_ips]
         $ start_gui
         ```
@@ -276,10 +286,11 @@ It is strongly recommended to NOT use the Vivado GUI (Project Mode) to build thi
 
         ```tcl
         $ cd src/xilinx
+        $ vivado -mode tcl
         $ set git_sha [exec git rev-parse --short=7 HEAD]
         $ set min_git_sha [string range $git_sha 0 0]
         $ set bd_git_sha "4'h$min_git_sha"
-        $ source daphne3_bd_gen.tcl
+        $ source -notrace daphne3_bd_gen.tcl
         $ start_gui
         ```
 
