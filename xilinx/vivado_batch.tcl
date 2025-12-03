@@ -21,6 +21,14 @@ if { [string first $scriptsVivadoVersion $currentVivadoVersion] == -1 } {
 # general setup stuff
 set_param general.maxThreads 4
 set outputDir ./output
+# verify if the output folder has already been created
+if {[file exists $outputDir]} {
+    # output folder already exists, therefore delete it and its contents
+    puts "INFO: Output directory already exists at $outputDir."
+    puts "INFO: Deleting older version of output files."
+    file delete -force $outputDir 
+}
+# create the new folder to populate later with the results of the process
 file mkdir $outputDir 
 set_part xck26-sfvc784-2LV-c
 set_property BOARD_PART xilinx.com:k26c:part0:1.4 [current_project]
@@ -36,48 +44,53 @@ set git_sha [exec git rev-parse --short=7 HEAD]
 set v_git_sha "28'h$git_sha"
 puts "INFO: passing git commit number $v_git_sha to top level generic"
 
-# verify if the block design exists, if not, create it
-set bdFile ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
-if {![file exists $bdFile]} {
-    # the file does not exist, create it, then read it
-    # since sourcing the tcl file updates the IP catalog, we don't have to do it here
-    source ./daphne3_bd_gen.tcl
-    read_bd ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
-} else {
-    # the file exist
-    # re package the IP to consider possible changes to its source files
-    # running this command also updates the IP repo path and the Vivado IP catalog
-    # this ensures that the block design is properly read
-    source daphne3_ip_gen.tcl
+# create the block design
+# this command also verifies if the block design already exists, if so, it deletes it in order to generate a newer version
+source -notrace ./daphne3_bd_gen.tcl
+read_bd ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
 
-    # update IP catalog
-    set_property IP_REPO_PATHS ../ip_repo [current_project]
-    update_ip_catalog 
+# # verify if the block design exists, if not, create it
+# set bdFile ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
+# if {![file exists $bdFile]} {
+#     # the file does not exist, create it, then read it
+#     # since sourcing the tcl file updates the IP catalog, we don't have to do it here
+#     source ./daphne3_bd_gen.tcl
+#     read_bd ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
+# } else {
+#     # the file exist
+#     # re package the IP to consider possible changes to its source files
+#     # running this command also updates the IP repo path and the Vivado IP catalog
+#     # this ensures that the block design is properly read
+#     source daphne3_ip_gen.tcl
 
-    # read the block design
-    read_bd ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
+#     # update IP catalog
+#     set_property IP_REPO_PATHS ../ip_repo [current_project]
+#     update_ip_catalog 
 
-    # open the block design
-    open_bd_design ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
+#     # read the block design
+#     read_bd ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
 
-    # upgrade the DAPHNE IP
-    upgrade_ip [get_ips DAPHNE_V3_F4_3_DAPHNE3_0]
+#     # open the block design
+#     open_bd_design ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
 
-    # re configure the version parameter of the IP with the current git commit number
-    set_property CONFIG.version $v_git_sha [get_ips DAPHNE_V3_F4_3_DAPHNE3_0]
+#     # upgrade the DAPHNE IP
+#     upgrade_ip [get_ips DAPHNE_V3_F4_3_DAPHNE3_0]
 
-    # regenerate layout so it looks cleaner
-    regenerate_bd_layout
+#     # re configure the version parameter of the IP with the current git commit number
+#     set_property CONFIG.version $v_git_sha [get_ips DAPHNE_V3_F4_3_DAPHNE3_0]
 
-    # check the integrity of the block design
-    validate_bd_design
+#     # regenerate layout so it looks cleaner
+#     regenerate_bd_layout
 
-    # save it 
-    save_bd_design
+#     # check the integrity of the block design
+#     validate_bd_design
 
-    # close the file
-    close_bd_design [current_bd_design]
-}
+#     # save it 
+#     save_bd_design
+
+#     # close the file
+#     close_bd_design [current_bd_design]
+# }
 
 # make the wrapper of the block design needed for later synthesis and implementation
 make_wrapper -top -files [get_files ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd] 

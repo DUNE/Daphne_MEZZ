@@ -36,9 +36,17 @@ On Linux:
 
 ```bash
 $ source <install_path_to>/Vitis/<version>/settings64.sh
-4 source <install_path_to_petalinux>/settings64.sh
+$ source <install_path_to_petalinux>/settings64.sh
 $ cd src/xilinx
 $ vivado -mode tcl -source vivado_batch.tcl
+```
+
+You can also run the command with the -notrace argument to keep the output of the terminal cleaner, only status of the process will be displayed on this case:
+```bash
+Windows:
+$ source -notrace vivado_batch.tcl
+Linux: 
+$ vivado -mode tcl -source vivado_batch.tcl -notrace
 ```
 
 After Vivado completes the process, the output reports, bit/bin and XSA files and overlay files can be found in the `src/xilinx/output` directory.
@@ -230,7 +238,7 @@ It is strongly recommended to NOT use the Vivado GUI (Project Mode) to build thi
 
         ```tcl
         $ cd src/xilinx
-        $ source daphne3_ip_gen.tcl
+        $ vivado -mode tcl -source daphne3_ip_gen.tcl -notrace
         $ ipx::edit_ip_in_project ../ip_repo/daphne3_ip/component.xml
         $ start_gui
         ```
@@ -256,8 +264,8 @@ It is strongly recommended to NOT use the Vivado GUI (Project Mode) to build thi
 
         ```tcl
         $ cd src/xilinx
-        $ source daphne3_ip_gen.tcl
-        $ source axilite_ram_ip_gen.tcl                               <---- This one can be skipped if this IP is not in the design
+        $ vivado -mode tcl -source daphne3_ip_gen.tcl -notrace
+        $ vivado -mode tcl -source axilite_ram_ip_gen.tcl -notrace <---- This one can be skipped if this IP is not in the design
         $ set_property IP_REPO_PATHS ../ip_repo [current_project]
         $ update_ip_catalog 
         $ read_bd ../bd/DAPHNE_V3_F4_3/DAPHNE_V3_F4_3.bd
@@ -276,9 +284,10 @@ It is strongly recommended to NOT use the Vivado GUI (Project Mode) to build thi
 
         ```tcl
         $ cd src/xilinx
+        $ vivado -mode tcl
         $ set git_sha [exec git rev-parse --short=7 HEAD]
         $ set v_git_sha "28'h$git_sha"
-        $ source daphne3_bd_gen.tcl
+        $ source -notrace daphne3_bd_gen.tcl
         $ start_gui
         ```
 
