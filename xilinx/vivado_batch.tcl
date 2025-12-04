@@ -19,7 +19,7 @@ if { [string first $scriptsVivadoVersion $currentVivadoVersion] == -1 } {
 }
 
 # general setup stuff
-set_param general.maxThreads 24
+set_param general.maxThreads 4
 set outputDir ./output
 # verify if the output folder has already been created
 if {[file exists $outputDir]} {
