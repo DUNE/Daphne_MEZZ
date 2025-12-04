@@ -43,9 +43,15 @@ port(
     timestamp: in std_logic_vector(63 downto 0);
 	din: in std_logic_vector(13 downto 0); -- aligned AFE data
 
+    adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
+    ti_trigger: in std_logic_vector(7 downto 0);
+    ti_trigger_stbr: in std_logic;
+
     record_count: out std_logic_vector(63 downto 0); -- diagnostic counters
     full_count: out std_logic_vector(63 downto 0);
     busy_count: out std_logic_vector(63 downto 0);
+
+    trigger_output: out std_logic;
 
     ready: out std_logic; -- i have something!
     rd_en: in std_logic; -- output FIFO read enable
@@ -100,6 +106,9 @@ port(
     ts: in std_logic_vector(63 downto 0);
     baseline: in std_logic_vector(13 downto 0);
     threshold: in std_logic_vector(9 downto 0);
+    adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
+    ti_trigger: in std_logic_vector(7 downto 0);
+    ti_trigger_stbr: in std_logic;
     trig: out std_logic;
     trig_sample_dat: out std_logic_vector(13 downto 0);
     trig_sample_ts: out std_logic_vector(63 downto 0)
@@ -201,6 +210,9 @@ port map(
      ts => timestamp,
      baseline => calculated_baseline,
      threshold => threshold,
+     adhoc => adhoc,
+     ti_trigger => ti_trigger,
+     ti_trigger_stbr => ti_trigger_stbr,
      trig => triggered,
      trig_sample_dat => trig_sample_dat, 
      trig_sample_ts => trig_sample_ts 
@@ -484,5 +496,6 @@ port map (
 );
 
 ready <= not prog_empty;
+trigger_output <= triggered;
 
 end stc3_arch;

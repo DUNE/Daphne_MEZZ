@@ -27,7 +27,12 @@ port(
     reset: in std_logic;
     timestamp: in std_logic_vector(63 downto 0);
     forcetrig: in std_logic;
+    st_trigger_signal: out std_logic_vector(19 downto 0);
 	din: in array_20x14_type; -- 20 AFE channels feed into this module
+
+    adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
+    ti_trigger: in std_logic_vector(7 downto 0);
+    ti_trigger_stbr: in std_logic;
 
     record_count: out array_20x64_type; -- diagnostic counters
     full_count: out array_20x64_type;
@@ -60,6 +65,10 @@ architecture st20_top_arch of st20_top is
         clock: in std_logic;
         reset: in std_logic;
         forcetrig: in std_logic;
+        adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
+        ti_trigger: in std_logic_vector(7 downto 0);
+        ti_trigger_stbr: in std_logic;
+        trigger_output: out std_logic; --output trigger signal
         timestamp: in std_logic_vector(63 downto 0);
     	din: in std_logic_vector(13 downto 0);
 
@@ -89,6 +98,10 @@ begin
                 clock => clock,
                 reset => reset,
                 forcetrig => forcetrig,
+                trigger_output => st_trigger_signal(i),
+                adhoc => adhoc,
+                ti_trigger => ti_trigger,
+                ti_trigger_stbr => ti_trigger_stbr,
                 timestamp => timestamp,
             	din => din(i),
 

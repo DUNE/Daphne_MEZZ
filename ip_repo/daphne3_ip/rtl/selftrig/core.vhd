@@ -25,6 +25,10 @@ port(
     timestamp: in std_logic_vector(63 downto 0); -- timestamp sync to clock
     enable: in std_logic_vector(39 downto 0); -- self trig sender channel enables
     forcetrig: in std_logic; -- momentary pulse to force all enabled senders to trigger
+    st_trigger_signal: out std_logic_vector(39 downto 0);
+    adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
+    ti_trigger: in std_logic_vector(7 downto 0);
+    ti_trigger_stbr: in std_logic;
     threshold: in std_logic_vector(9 downto 0); -- counts below calculated baseline
     din_core: in array_5x9x16_type;
    -- afe_data0: in std_logic_vector(13 downto 0);
@@ -236,9 +240,13 @@ selftrig_core_inst: entity work.selftrig_core
 port map (
     clock  => clock,  -- main clock 62.5 MHz
     reset  => reset,
-   version  => version (3 downto 0),
+    version  => version (3 downto 0),
     timestamp  => timestamp,
     forcetrig  => forcetrig,
+    st_trigger_signal => st_trigger_signal,
+    adhoc => adhoc,
+    ti_trigger => ti_trigger,
+    ti_trigger_stbr => ti_trigger_stbr,
 	din  => din_core , -- 45 AFE channels feed into this module
     dout  => dout,
     valid  => valid,

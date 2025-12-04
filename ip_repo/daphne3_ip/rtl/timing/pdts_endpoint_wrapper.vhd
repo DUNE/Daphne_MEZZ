@@ -28,7 +28,9 @@ entity pdts_endpoint_wrapper is -- for DAPHNE V2a design
 		F_OK_DEBUG: out std_logic ;
 		SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
 		CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
-		tstamp: out std_logic_vector(63 downto 0) -- Timestamp (clk domain)
+		tstamp: out std_logic_vector(63 downto 0); -- Timestamp (clk domain)
+		sync: out std_logic_vector(7 downto 0);
+		sync_stb: out std_logic 
 	);
 end pdts_endpoint_wrapper;
 
@@ -114,8 +116,8 @@ pdts_endpoint_inst: pdts_endpoint
 		pll_clki => '0', -- Externally produced clock
 		clk2x => open, -- 2x clock output
 		clk4x => open, -- 4x clock output
-		sync => open, -- Sync command output (clk domain)
-		sync_stb => open -- Sync command strobe (clk domain)
+		sync => sync, -- Sync command output (clk domain)
+		sync_stb => sync_stb -- Sync command strobe (clk domain)
 	);
 F_OK_DEBUG <= f_ok;
     SCTR_DEBUG <= sctr;

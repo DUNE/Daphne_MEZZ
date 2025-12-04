@@ -29,7 +29,8 @@ port(
 
     d0: out std_logic_vector(63 downto 0); -- output to single channel 10G sender
     d0_valid: out std_logic;
-    d0_last:  out std_logic
+    d0_last:  out std_logic;
+    st_trigger_signal: out std_logic_vector(39 downto 0)
 );
 end st40_top;
 
@@ -54,6 +55,7 @@ architecture st40_top_arch of st40_top is
         reset: in std_logic;
         enable: in std_logic;
         forcetrig: in std_logic; -- force a trigger
+        trigger_output: out std_logic; --output trigger signal
         timestamp: in std_logic_vector(63 downto 0);
     	din: in std_logic_vector(13 downto 0); -- aligned AFE data
         rd_en: in std_logic; -- output FIFO read enable
@@ -82,7 +84,8 @@ begin
             	din => din(i),
                 rd_en => fifo_rd_en(i),
                 dout => fifo_dout(i),
-                ready => ready(i)
+                ready => ready(i),
+                trigger_output => st_trigger_signal(i)
               );
 
     end generate gen_stc;

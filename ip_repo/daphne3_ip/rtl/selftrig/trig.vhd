@@ -26,6 +26,9 @@ port(
     ts: in std_logic_vector(63 downto 0); -- timestamp
     threshold: in std_logic_vector(9 downto 0); -- counts relative to the baseline
     baseline: in std_logic_vector(13 downto 0); -- average signal level computed over past N samples
+    adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
+    ti_trigger: in std_logic_vector(7 downto 0);
+    ti_trigger_stbr: in std_logic;
     trig_sample_dat: out std_logic_vector(13 downto 0); -- the sample that caused the trigger
     trig_sample_ts:  out std_logic_vector(63 downto 0); -- the timestamp of the sample that caused the trigger
     trig: out std_logic -- trigger pulse (after latency delay)
@@ -63,7 +66,7 @@ begin
     -- current_sample ABOVE trig_thresh
     -- prev_sample BELOW trig_thresh
 
-    triggered_i <= '1' when ( current_sample>trig_thresh and prev_sample<=trig_thresh ) else '0';
+    triggered_i <= '1' when ( (current_sample>trig_thresh and prev_sample<=trig_thresh) or ( ti_trigger=adhoc and ti_trigger_stbr='1' ) ) else '0';
 
     -- add in some fake/synthetic latency, adjust it so total trigger latency is 64 clocks
 

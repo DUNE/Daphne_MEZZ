@@ -355,12 +355,10 @@ port(
     mmcm0_100MHZ_CLK_debug: out std_logic ;
     ep_62p5MHZ_CLK_debug: out std_logic ;
     F_OK_DEBUG: out std_logic ;    
-     SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+    SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
     CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
-     Trigered_debug: out std_logic 
+    Trigered_debug: out std_logic
     --ep_mmcm1_reset: out std_logic
-   
-     
 
   );
 end DAPHNE3;
@@ -474,6 +472,8 @@ port(
     sclk200: out std_logic; -- system clock 200MHz
     --sclk100: out std_logic; -- system clock 100MHz
     timestamp: out std_logic_vector(63 downto 0); -- sync to clock 
+    sync: out std_logic_vector(7 downto 0);
+    sync_stb: out std_logic; 
     
     -- debug signals
     
@@ -639,9 +639,11 @@ signal afe_p_array, afe_n_array: array_5x9_type;
 signal din_full_array: array_5x9x16_type;
 signal din_array: array_5x8x14_type;
 signal trig: std_logic;
+signal spybuffer_trig: std_logic;
 signal timestamp: std_logic_vector(63 downto 0);
 signal clock, clk125, clk500: std_logic;
 signal core_chan_enable: std_logic_vector(39 downto 0);
+signal st_trigger_signal: std_logic_vector(39 downto 0);
 
 signal S_AXI_ACLK:    std_logic;
 signal S_AXI_ARESETN: std_logic;
@@ -815,8 +817,14 @@ signal out_buff_trig_reg:  std_logic ;
 signal valid_debug_reg: std_logic_vector (1 downto 0) ;
 signal  last_debug_reg :  std_logic_vector (1 downto 0) ; 
 signal din_debug_reg: std_logic_vector (13 downto 0);
-signal trigered_debug_reg: std_logic ;
+signal trigered_debug_reg: std_logic;
 
+--timing interface trigger signals
+signal ti_trigger_reg: std_logic_vector(7 downto 0); ------------------
+signal ti_trigger_stbr_reg: std_logic;  ---------------------------
+signal ti_trigger_en: std_logic;
+signal ti_trigger_en0, ti_trigger_en1, ti_trigger_en2, trig_en_total: std_logic;
+signal adhoc_reg: std_logic_vector(7 downto 0) := DEFAULT_ST_ADHOC_COMMAND;
     
  signal  f_ok,sysclk_ibuf,mmcm0_clkout2,ep_clk62p5: std_logic ;
 signal sctr, cctr: std_logic_vector (15 downto 0);
@@ -1120,7 +1128,7 @@ port map(
 spybuffers_inst: spybuffers
 port map(
     clock           => clock,
-    trig            => trig,
+    trig            => spybuffer_trig,
     din             => din_full_array,
     timestamp       => timestamp,
 	S_AXI_ACLK	    => SPY_BUF_S_S_AXI_ACLK,
@@ -1163,7 +1171,8 @@ port map(
     clk500          => clk500,
     clk125          => clk125,
     timestamp       => timestamp,
-    
+    sync => ti_trigger_reg, -- Sync command output (clk domain)
+    sync_stb => ti_trigger_stbr_reg, -- Sync command strobe (clk domain)
     
     
     -- endpoint debug signals
@@ -1206,7 +1215,18 @@ ep_62p5MHZ_CLK_debug       =>ep_clk62p5,
 	S_AXI_RREADY	=> EP_AXI_RREADY
 );
 
+ti_trigger_en <= '1' when ( ti_trigger_reg=adhoc_reg and ti_trigger_stbr_reg='1' ) else '0';
+spybuffer_trig <= trig or trig_en_total;
 -- SPI master for AFEs and associated DACs
+trig_proc: process(clock) -- note external trigger input is inverted on DAPHNE2
+    begin
+        if rising_edge(clock) then
+            ti_trigger_en0 <= ti_trigger_en;
+            ti_trigger_en1 <= ti_trigger_en0;
+            ti_trigger_en2 <= ti_trigger_en1;
+            trig_en_total <= ti_trigger_en0 or ti_trigger_en1 or ti_trigger_en2;
+        end if;
+    end process trig_proc;
 
 spim_afe_inst: spim_afe 
 port map(
@@ -1348,6 +1368,10 @@ port map(
     din_core => din_full_array,
     enable => core_chan_enable, 
     forcetrig =>  FORCE_TRIG,
+    st_trigger_signal => st_trigger_signal,
+    adhoc => adhoc_reg,
+    ti_trigger => ti_trigger_reg,
+    ti_trigger_stbr => ti_trigger_stbr_reg,
     S_AXI_ACLK	    => TRIRG_S_AXI_ACLK,
 	S_AXI_ARESETN	=> TRIRG_S_AXI_ARESETN,
 	S_AXI_AWADDR	=> CORE_AXI_AWADDR,

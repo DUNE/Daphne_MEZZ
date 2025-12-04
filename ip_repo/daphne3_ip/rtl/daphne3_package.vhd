@@ -85,6 +85,7 @@ package daphne3_package is
     constant DEFAULT_ext_mac_addr_0: std_logic_vector(47 downto 0)  := X"DEADBEEFCAFE"; -- Ethernet MAC address
     constant DEFAULT_ext_ip_addr_0: std_logic_vector(31 downto 0)   := X"C0A80064"; -- Ethernet IP address 192.168.0.100
     constant DEFAULT_ext_port_addr_0: std_logic_vector(15 downto 0) := X"1234"; -- Ethernet Port number
+    constant DEFAULT_ST_ADHOC_COMMAND: std_logic_vector(7 downto 0) := X"07";
 
 end package;
 

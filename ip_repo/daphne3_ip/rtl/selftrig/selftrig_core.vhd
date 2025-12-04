@@ -19,7 +19,11 @@ port(
     version: in std_logic_vector(3 downto 0);
     timestamp: in std_logic_vector(63 downto 0);
     forcetrig: in std_logic;
-	din: in array_5x9x16_type; 
+    st_trigger_signal: out std_logic_vector(39 downto 0);
+    adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
+    ti_trigger: in std_logic_vector(7 downto 0);
+    ti_trigger_stbr: in std_logic;
+	  din: in array_5x9x16_type; 
     dout: out array_2x64_type;
     valid: out std_logic_vector(1 downto 0);
     last:  out std_logic_vector(1 downto 0);
@@ -42,7 +46,11 @@ port(
     reset: in std_logic;
     timestamp: in std_logic_vector(63 downto 0);
     forcetrig: in std_logic;
-	din: in array_20x14_type;
+    adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
+    ti_trigger: in std_logic_vector(7 downto 0);
+    ti_trigger_stbr: in std_logic;
+    st_trigger_signal: out std_logic_vector(19 downto 0);
+	  din: in array_20x14_type;
     record_count: out array_20x64_type;
     full_count: out array_20x64_type;
     busy_count: out array_20x64_type;
@@ -56,6 +64,8 @@ signal din_lower, din_upper: array_20x14_type;
 
 signal threshold_lower, threshold_upper: array_20x10_type;
 signal threshold: array_40x10_type;
+signal st_trigger_signal_lower: std_logic_vector(19 downto 0);
+signal st_trigger_signal_upper: std_logic_vector(19 downto 0);
 
 signal record_count_lower, full_count_lower, busy_count_lower: array_20x64_type;
 signal record_count_upper, full_count_upper, busy_count_upper: array_20x64_type;
@@ -128,7 +138,9 @@ din_upper(19) <= din(4)(7)(15 downto 2);
 
 gen20stuff: for i in 19 downto 0 generate
     threshold_lower(i) <= threshold(i);
-    threshold_upper(i) <= threshold(i+20);   
+    threshold_upper(i) <= threshold(i+20);
+    st_trigger_signal(i) <= st_trigger_signal_lower(i);
+    st_trigger_signal(i+20) <= st_trigger_signal_upper(i);    
     record_count(i) <= record_count_lower(i);
     record_count(i+20) <= record_count_upper(i);
     busy_count(i) <= busy_count_lower(i);
@@ -148,7 +160,11 @@ port map(
     reset => reset,
     timestamp => timestamp,
     forcetrig => forcetrig,
-	din => din_lower,
+    adhoc => adhoc,
+    ti_trigger => ti_trigger,
+    ti_trigger_stbr => ti_trigger_stbr,
+    st_trigger_signal => st_trigger_signal_lower,
+	  din => din_lower,
     record_count => record_count_lower,
     full_count => full_count_lower,
     busy_count => busy_count_lower,
@@ -168,7 +184,11 @@ port map(
     reset => reset,
     timestamp => timestamp,
     forcetrig => forcetrig,
-	din => din_upper,
+    adhoc => adhoc,
+    ti_trigger => ti_trigger,
+    ti_trigger_stbr => ti_trigger_stbr,
+    st_trigger_signal => st_trigger_signal_upper,
+	  din => din_upper,
     record_count => record_count_upper,
     full_count => full_count_upper,
     busy_count => busy_count_upper,

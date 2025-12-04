@@ -44,11 +44,12 @@ port(
     clk125:  out std_logic;  -- front end clock 125MHz
     sclk200:  out std_logic;  -- front end clock 125MHz
     timestamp: out std_logic_vector(63 downto 0); -- sync to clock
+    sync: out std_logic_vector(7 downto 0);
+    sync_stb: out std_logic;
 
-
-F_OK_DEBUG: out std_logic ;
-		SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
-		CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+    F_OK_DEBUG: out std_logic ;
+	SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+	CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
     -- AXI-Lite interface for the control/status registers
 
 	S_AXI_ACLK: in std_logic;
@@ -90,9 +91,11 @@ port(
     clk: out std_logic; -- Base clock output is 62.5MHz
     rst: out std_logic; -- Base clock reset (clk domain)
     ready: out std_logic; -- Endpoint ready flag (clk domain)
+    sync: out std_logic_vector(7 downto 0);
+    sync_stb: out std_logic; 
     F_OK_DEBUG: out std_logic ;
-    		SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
-		CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+    SCTR_DEBUG: OUT std_logic_vector (15 downto 0);
+	CCTR_DEBUG: OUT std_logic_vector (15 downto 0);
     tstamp: out std_logic_vector(63 downto 0) -- Timestamp (clk domain)
 );
 end component;
@@ -262,9 +265,11 @@ pdts_endpoint_inst: pdts_endpoint_wrapper
 		clk => ep_clk62p5, -- output clock from endpoint 62.5MHz
 		rst => open, -- endpoint reset output not used here
 		ready => ep_ts_rdy,
-		F_OK_DEBUG => f_ok,
-		    SCTR_DEBUG=> sctr,
-		    CCTR_DEBUG => cctr,
+		sync => sync,
+        sync_stb => sync_stb,
+        F_OK_DEBUG => f_ok,
+		SCTR_DEBUG=> sctr,
+		CCTR_DEBUG => cctr,
 		tstamp => real_timestamp
 	);
 
