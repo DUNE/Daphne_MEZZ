@@ -16,15 +16,22 @@ use work.daphne3_package.all;
 
 entity st20_top is
 generic(
-    baseline_runlength: integer := 256; -- options 32, 64, 128, or 256
+    -- baseline_runlength: integer := 256; -- options 32, 64, 128, or 256
     start_channel_number: integer := 0 -- 0 or 20
 ); 
 port(
-    thresholds: in array_20x10_type; -- counts relative to the calculated baseline
+    -- thresholds: in array_20x10_type; -- counts relative to the calculated baseline
+    thresholds_xc: in array_20x28_type; -- cross correlation trigger thresholds array
     version: in std_logic_vector(3 downto 0);
+    filter_output_selector: in std_logic_vector(1 downto 0); --Esteban
+    afe_comp_enable: in std_logic_vector(19 downto 0);
+    invert_enable: in std_logic_vector(19 downto 0);
+    st_config: in std_logic_vector(13 downto 0); -- Config param for Self-Trigger and Local Primitive Calculation, CIEMAT (Nacho)
+    signal_delay: in std_logic_vector(4 downto 0);
 
     clock: in std_logic; -- main clock 62.5 MHz
     reset: in std_logic;
+    reset_st_counters: in std_logic;
     timestamp: in std_logic_vector(63 downto 0);
     forcetrig: in std_logic;
     st_trigger_signal: out std_logic_vector(19 downto 0);
@@ -37,6 +44,10 @@ port(
     record_count: out array_20x64_type; -- diagnostic counters
     full_count: out array_20x64_type;
     busy_count: out array_20x64_type;
+
+    afe_dat_filtered: out array_20x14_type; -- aligned AFE data filtered 
+    TCount: out array_20x64_type; 
+    PCount: out array_20x64_type;
 
     dout: out std_logic_vector(63 downto 0); -- output to single channel 10G sender
     valid: out std_logic;
@@ -56,14 +67,21 @@ architecture st20_top_arch of st20_top is
     signal fifo_dout_mux: std_logic_vector(71 downto 0);
 
     component stc3 is
-    generic( baseline_runlength: integer := 256 );
+    -- generic( baseline_runlength: integer := 256 );
     port(
         ch_id: std_logic_vector(7 downto 0);
         version: std_logic_vector(3 downto 0);    
-        threshold: std_logic_vector(9 downto 0);
+        -- threshold: std_logic_vector(9 downto 0);
+        st_config: in std_logic_vector(13 downto 0); -- Config param for Self-Trigger and Local Primitive Calculation, CIEMAT (Nacho)
+        signal_delay: in std_logic_vector(4 downto 0);
+        threshold_xc: in std_logic_vector(27 downto 0); -- cross correlation trigger threshold 
+        filter_output_selector: in std_logic_vector(1 downto 0); --Esteban
+        afe_comp_enable: in std_logic;
+        invert_enable: in std_logic;
 
         clock: in std_logic;
         reset: in std_logic;
+        reset_st_counters: in std_logic;
         forcetrig: in std_logic;
         adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
         ti_trigger: in std_logic_vector(7 downto 0);
@@ -75,6 +93,10 @@ architecture st20_top_arch of st20_top is
         record_count: out std_logic_vector(63 downto 0);
         full_count: out std_logic_vector(63 downto 0);
         busy_count: out std_logic_vector(63 downto 0);
+
+        st_afe_dat_filtered: out std_logic_vector(13 downto 0); -- aligned AFE data filtered
+        TCount: out std_logic_vector(63 downto 0);
+        PCount: out std_logic_vector(63 downto 0);
 
         ready: out std_logic;
         rd_en: in std_logic;
@@ -89,14 +111,20 @@ begin
     gen_stc: for i in 19 downto 0 generate
 
             stc3_inst: stc3
-            generic map ( baseline_runlength => baseline_runlength )
+            -- generic map ( baseline_runlength => baseline_runlength )
             port map(   
                 ch_id => std_logic_vector( to_unsigned(i+start_channel_number, 8) ),
                 version => version,
-                threshold => thresholds(i),
+                threshold_xc => thresholds_xc(i),
+                st_config => st_config, -- Config param for Self-Trigger and Local Primitive Calculation, CIEMAT (Nacho)
+                signal_delay => signal_delay,
+                filter_output_selector => filter_output_selector, --Esteban
+                afe_comp_enable => afe_comp_enable(i),
+                invert_enable => invert_enable(i),
 
                 clock => clock,
                 reset => reset,
+                reset_st_counters => reset_st_counters,
                 forcetrig => forcetrig,
                 trigger_output => st_trigger_signal(i),
                 adhoc => adhoc,
@@ -108,6 +136,10 @@ begin
                 record_count => record_count(i),
                 full_count => full_count(i),
                 busy_count => busy_count(i),
+
+                st_afe_dat_filtered => afe_dat_filtered(i), -- aligned AFE data filtered
+                TCount => TCount(i),
+                PCount => PCount(i),
 
                 ready => ready(i),
                 rd_en => fifo_rd_en(i),

@@ -21,7 +21,7 @@ generic(
     slot_id: std_logic_vector(3 downto 0) := X"2";
     crate_id: std_logic_vector(9 downto 0) := "0000000011";
     detector_id: std_logic_vector(5 downto 0) := "000010";
-    threshold: in std_logic_vector(9 downto 0):= "1000000000";
+    -- threshold: in std_logic_vector(9 downto 0):= "1000000000";
     version_id: std_logic_vector(5 downto 0) := "000001");  -- build virsion - to be updated everytime we build a new image
 port(
             
@@ -609,6 +609,13 @@ port(
     stat_led        : out std_logic_vector(5 downto 0);
     version         : in std_logic_vector(27 downto 0);
     core_chan_enable: out std_logic_vector(39 downto 0);
+    adhoc           : out std_logic_vector(7 downto 0); 
+    filter_output_selector: out std_logic_vector(1 downto 0);
+    afe_comp_enable : out std_logic_vector(39 downto 0);
+    invert_enable   : out std_logic_vector(39 downto 0);
+    st_config       : out std_logic_vector(13 downto 0);
+    signal_delay    : out std_logic_vector(4 downto 0);
+    reset_st_counters: out std_logic; 
 	S_AXI_ACLK	    : in std_logic;
 	S_AXI_ARESETN	: in std_logic;
 	S_AXI_AWADDR	: in std_logic_vector(31 downto 0);
@@ -824,9 +831,16 @@ signal ti_trigger_reg: std_logic_vector(7 downto 0); ------------------
 signal ti_trigger_stbr_reg: std_logic;  ---------------------------
 signal ti_trigger_en: std_logic;
 signal ti_trigger_en0, ti_trigger_en1, ti_trigger_en2, trig_en_total: std_logic;
-signal adhoc_reg: std_logic_vector(7 downto 0) := DEFAULT_ST_ADHOC_COMMAND;
-    
- signal  f_ok,sysclk_ibuf,mmcm0_clkout2,ep_clk62p5: std_logic ;
+signal adhoc: std_logic_vector(7 downto 0);
+
+-- self trigger core operation and configuration signals
+signal filter_output_selector: std_logic_vector(1 downto 0);
+signal invert_enable, afe_comp_enable: std_logic_vector(39 downto 0);
+signal st_config: std_logic_vector(13 downto 0);
+signal signal_delay: std_logic_vector(4 downto 0);
+signal reset_st_counters: std_logic;
+
+signal  f_ok,sysclk_ibuf,mmcm0_clkout2,ep_clk62p5: std_logic ;
 signal sctr, cctr: std_logic_vector (15 downto 0);
          
 
@@ -1215,7 +1229,7 @@ ep_62p5MHZ_CLK_debug       =>ep_clk62p5,
 	S_AXI_RREADY	=> EP_AXI_RREADY
 );
 
-ti_trigger_en <= '1' when ( ti_trigger_reg=adhoc_reg and ti_trigger_stbr_reg='1' ) else '0';
+ti_trigger_en <= '1' when ( ti_trigger_reg=adhoc and ti_trigger_stbr_reg='1' ) else '0';
 spybuffer_trig <= trig or trig_en_total;
 -- SPI master for AFEs and associated DACs
 trig_proc: process(clock) -- note external trigger input is inverted on DAPHNE2
@@ -1318,7 +1332,14 @@ port map(
     mux_a           => mux_a,
     stat_led        => stat_led,
     version         => version,
-    core_chan_enable => core_chan_enable,
+    adhoc           => adhoc,
+    core_chan_enable        => core_chan_enable,
+    filter_output_selector  => filter_output_selector,
+    afe_comp_enable         => afe_comp_enable,
+    invert_enable   => invert_enable,
+    st_config       => st_config,
+    signal_delay    => signal_delay,
+    reset_st_counters => reset_st_counters,
     S_AXI_ACLK	    => STUFF_S_AXI_ACLK,
 	S_AXI_ARESETN	=> STUFF_S_AXI_ARESETN,
 	S_AXI_AWADDR	=> STUFF_AXI_AWADDR,
@@ -1360,16 +1381,23 @@ port map(
     slot_id => slot_id,
     crate_id => crate_id,
     detector_id => detector_id,
-    threshold  => threshold,
+    -- threshold  => threshold,
     version => version_id,
+    filter_output_selector => filter_output_selector,
+    afe_comp_enable => afe_comp_enable,
+    invert_enable => invert_enable,
+    st_config => st_config,
+    signal_delay => signal_delay,
     clock => clock,
     reset => '0', 
+    reset_st_counters => reset_st_counters,
     timestamp => timestamp,
     din_core => din_full_array,
+    afe_dat_filtered => open,
     enable => core_chan_enable, 
     forcetrig =>  FORCE_TRIG,
     st_trigger_signal => st_trigger_signal,
-    adhoc => adhoc_reg,
+    adhoc => adhoc,
     ti_trigger => ti_trigger_reg,
     ti_trigger_stbr => ti_trigger_stbr_reg,
     S_AXI_ACLK	    => TRIRG_S_AXI_ACLK,

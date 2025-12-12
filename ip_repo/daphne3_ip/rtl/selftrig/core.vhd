@@ -16,12 +16,18 @@ port(
     crate_id: in std_logic_vector(9 downto 0);
     detector_id: in std_logic_vector(5 downto 0);
     version: in std_logic_vector(5 downto 0);
+    filter_output_selector: in std_logic_vector(1 downto 0); --Esteban
+    afe_comp_enable: in std_logic_vector(39 downto 0);
+    invert_enable: in std_logic_vector(39 downto 0);
+    st_config: in std_logic_vector(13 downto 0); -- Config param for Self-Trigger and Local Primitive Calculation, CIEMAT (Nacho)
+    signal_delay: in std_logic_vector(4 downto 0);
     --DEFAULT_ext_mac_addr_0:in std_logic_vector (47 downto 0); -- Ethernet defaults point up to generics for now
     --DEFAULT_ext_ip_addr_0:in std_logic_vector (31 downto 0);
     --DEFAULT_ext_port_addr_0:in std_logic_vector (15 downto 0);
 
     clock: in std_logic; -- master clock 62.5MHz
     reset: in std_logic; -- sync to clock
+    reset_st_counters: in std_logic;
     timestamp: in std_logic_vector(63 downto 0); -- timestamp sync to clock
     enable: in std_logic_vector(39 downto 0); -- self trig sender channel enables
     forcetrig: in std_logic; -- momentary pulse to force all enabled senders to trigger
@@ -29,8 +35,9 @@ port(
     adhoc: in std_logic_vector(7 downto 0); -- command value for adhoc trigger
     ti_trigger: in std_logic_vector(7 downto 0);
     ti_trigger_stbr: in std_logic;
-    threshold: in std_logic_vector(9 downto 0); -- counts below calculated baseline
+    -- threshold: in std_logic_vector(9 downto 0); -- counts below calculated baseline
     din_core: in array_5x9x16_type;
+    afe_dat_filtered: out array_40x14_type; -- aligned AFE data filtered 
    -- afe_data0: in std_logic_vector(13 downto 0);
     --afe_data1: in std_logic_vector(13 downto 0);
     --afe_data2: in std_logic_vector(13 downto 0);
@@ -240,7 +247,13 @@ selftrig_core_inst: entity work.selftrig_core
 port map (
     clock  => clock,  -- main clock 62.5 MHz
     reset  => reset,
+    reset_st_counters => reset_st_counters,
     version  => version (3 downto 0),
+    filter_output_selector => filter_output_selector, --Esteban
+    afe_comp_enable => afe_comp_enable,
+    invert_enable => invert_enable,
+    st_config => st_config, -- Config param for Self-Trigger and Local Primitive Calculation, CIEMAT (Nacho)
+    signal_delay => signal_delay,
     timestamp  => timestamp,
     forcetrig  => forcetrig,
     st_trigger_signal => st_trigger_signal,
@@ -249,6 +262,7 @@ port map (
     ti_trigger_stbr => ti_trigger_stbr,
 	din  => din_core , -- 45 AFE channels feed into this module
     dout  => dout,
+    afe_dat_filtered => afe_dat_filtered,
     valid  => valid,
     last  => last,
     AXI_IN   => AXI_IN,
