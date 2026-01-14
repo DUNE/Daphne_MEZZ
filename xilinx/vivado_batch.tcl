@@ -139,7 +139,7 @@ write_bitstream -force -bin_file $outputDir/daphne3_st_$git_sha.bit
 # write_bitstream -force -bin_file $outputDir/daphne3.bit
 
 # write out ILA debug probes file
-write_debug_probes -force $outputDir/probes.ltx
+# write_debug_probes -force $outputDir/probes.ltx
 
 # export the implemented hardware system to the Vitis environment
 write_hw_platform -fixed -force -include_bit -file $outputDir/daphne3_st_$git_sha.xsa

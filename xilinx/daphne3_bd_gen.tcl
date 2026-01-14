@@ -1302,12 +1302,12 @@ set_property CONFIG.C_IRQ_CONNECTION {1} $axi_intc_0
 set xlconcat_0 [create_bd_cell -vlnv xilinx.com:ip:xlconcat:2.1 -type IP xlconcat_0]
 
 # create instance: system_ila_0, and set its properties
-set system_ila_0 [create_bd_cell -vlnv xilinx.com:ip:system_ila:1.1 -type IP system_ila_0]
-set_property -dict [list \
-    CONFIG.C_MON_TYPE {NATIVE} \
-    CONFIG.C_NUM_OF_PROBES {7} \
-    CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0} \
-] $system_ila_0
+#set system_ila_0 [create_bd_cell -vlnv xilinx.com:ip:system_ila:1.1 -type IP system_ila_0]
+#set_property -dict [list \
+#    CONFIG.C_MON_TYPE {NATIVE} \
+#    CONFIG.C_NUM_OF_PROBES {7} \
+#    CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0} \
+#] $system_ila_0
 
 # now, connect everything
 
@@ -1405,7 +1405,7 @@ connect_bd_net -net trig_IN_0_1 [get_bd_ports trig_IN] [get_bd_pins DAPHNE3/trig
 connect_bd_net -net xlconcat_0_dout [get_bd_pins xlconcat_0/dout] [get_bd_pins axi_intc_0/intr]
 connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins SYSTEM_RESET/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_lpd_aclk] [get_bd_pins axi_quad_spi_0/s_axi_aclk] [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins DAPHNE3/FRONT_END_S_AXI_ACLK] [get_bd_pins DAPHNE3/SPY_BUF_S_S_AXI_ACLK] [get_bd_pins DAPHNE3/END_P_S_AXI_ACLK] [get_bd_pins DAPHNE3/SPI_DAC_S_AXI_ACLK] [get_bd_pins DAPHNE3/AFE_SPI_S_AXI_ACLK] [get_bd_pins DAPHNE3/TRIRG_S_AXI_ACLK] [get_bd_pins DAPHNE3/STUFF_S_AXI_ACLK] [get_bd_pins DAPHNE3/THRESH_S_AXI_ACLK] [get_bd_pins DAPHNE3/OUTBUFF_S_AXI_ACLK]
 connect_bd_net -net zynq_ultra_ps_e_0_pl_clk1 [get_bd_pins zynq_ultra_ps_e_0/pl_clk1] [get_bd_pins smartconnect_0/aclk1] [get_bd_pins IIC_RESET/slowest_sync_clk] [get_bd_pins axi_iic_0/s_axi_aclk] [get_bd_pins axi_quad_spi_0/ext_spi_clk]
-connect_bd_net -net zynq_ultra_ps_e_0_pl_clk2 [get_bd_pins zynq_ultra_ps_e_0/pl_clk2] [get_bd_pins system_ila_0/clk]
+#connect_bd_net -net zynq_ultra_ps_e_0_pl_clk2 [get_bd_pins zynq_ultra_ps_e_0/pl_clk2] [get_bd_pins system_ila_0/clk]
 connect_bd_net -net zynq_ultra_ps_e_0_pl_clk3 [get_bd_pins zynq_ultra_ps_e_0/pl_clk3] [get_bd_pins DAPHNE3/sysclk100]
 connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn0 [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0] [get_bd_pins SYSTEM_RESET/ext_reset_in]
 connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn1 [get_bd_pins zynq_ultra_ps_e_0/pl_resetn1] [get_bd_pins IIC_RESET/ext_reset_in]
