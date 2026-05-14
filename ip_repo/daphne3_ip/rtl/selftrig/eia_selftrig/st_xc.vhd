@@ -24,7 +24,7 @@ port (
     din : in std_logic_vector(13 downto 0); -- filtered AFE data (no baseline)
     threshold : in std_logic_vector(27 downto 0); -- matching filter trigger threshold values - used to be (41 downto 0)
     triggered : out std_logic;
-    xcorr_calc : out signed(27 downto 0)
+    xcorr_calc : out unsigned(27 downto 0)
 );
 end st_xc;
 
@@ -32,52 +32,55 @@ architecture st_xc_arch of st_xc is
 
 -- threshold signals (threshold window)
 --------------------------------------------------------------------------------------------------------------------------------------------------
-signal s_threshold: signed(27 downto 0);
+-- signal s_threshold: signed(27 downto 0);
+signal s_threshold: unsigned(27 downto 0);
 --signal en_threshold: signed(13 downto 0);
 
 -- cross correlator specific signals
 --------------------------------------------------------------------------------------------------------------------------------------------------
 type type_r_st_xc is array (0 to 32) of std_logic_vector(47 downto 0);
 signal r_st_xc: type_r_st_xc:= (others => (others => '0'));
-signal xcorr, xcorr_reg0, xcorr_reg1: signed(27 downto 0) := (others => '0');
-signal s_r_st_xc: signed(47 downto 0) := (others => '0');
-
+-- signal xcorr, xcorr_reg0, xcorr_reg1: signed(27 downto 0) := (others => '0');
+signal xcorr, xcorr_reg0, xcorr_reg1: unsigned(27 downto 0) := (others => '0');
+-- signal s_r_st_xc: signed(47 downto 0) := (others => '0');
+signal s_r_st_xc: unsigned(47 downto 0) := (others => '0');
+ 
 -- matching filter template
 --------------------------------------------------------------------------------------------------------------------------------------------------
 type template is array (0 to 31) of std_logic_vector(13 downto 0);
 constant template_xc: template := (
-    std_logic_vector(to_signed(1,14)),
-    std_logic_vector(to_signed(0,14)),
-    std_logic_vector(to_signed(0,14)),
-    std_logic_vector(to_signed(0,14)),
-    std_logic_vector(to_signed(0,14)),
-    std_logic_vector(to_signed(0,14)),
-    std_logic_vector(to_signed(-1,14)),
-    std_logic_vector(to_signed(-1,14)),
-    std_logic_vector(to_signed(-1,14)),
-    std_logic_vector(to_signed(-1,14)),
-    std_logic_vector(to_signed(-1,14)),
-    std_logic_vector(to_signed(-2,14)),
-    std_logic_vector(to_signed(-2,14)),
-    std_logic_vector(to_signed(-3,14)),
-    std_logic_vector(to_signed(-4,14)),
-    std_logic_vector(to_signed(-4,14)),
-    std_logic_vector(to_signed(-5,14)),
-    std_logic_vector(to_signed(-5,14)),
-    std_logic_vector(to_signed(-6,14)),
-    std_logic_vector(to_signed(-7,14)),
-    std_logic_vector(to_signed(-6,14)),
-    std_logic_vector(to_signed(-7,14)),
-    std_logic_vector(to_signed(-7,14)),
-    std_logic_vector(to_signed(-7,14)),
-    std_logic_vector(to_signed(-7,14)),
-    std_logic_vector(to_signed(-6,14)),
-    std_logic_vector(to_signed(-5,14)),
-    std_logic_vector(to_signed(-4,14)),
-    std_logic_vector(to_signed(-3,14)),
-    std_logic_vector(to_signed(-2,14)),
-    std_logic_vector(to_signed(-1,14)),
-    std_logic_vector(to_signed(0,14))
+    std_logic_vector(to_unsigned(0,14)),
+    std_logic_vector(to_unsigned(0,14)),
+    std_logic_vector(to_unsigned(0,14)),
+    std_logic_vector(to_unsigned(0,14)),
+    std_logic_vector(to_unsigned(0,14)),
+    std_logic_vector(to_unsigned(0,14)),
+    std_logic_vector(to_unsigned(1,14)),
+    std_logic_vector(to_unsigned(1,14)),
+    std_logic_vector(to_unsigned(1,14)),
+    std_logic_vector(to_unsigned(1,14)),
+    std_logic_vector(to_unsigned(1,14)),
+    std_logic_vector(to_unsigned(2,14)),
+    std_logic_vector(to_unsigned(2,14)),
+    std_logic_vector(to_unsigned(3,14)),
+    std_logic_vector(to_unsigned(4,14)),
+    std_logic_vector(to_unsigned(4,14)),
+    std_logic_vector(to_unsigned(5,14)),
+    std_logic_vector(to_unsigned(5,14)),
+    std_logic_vector(to_unsigned(6,14)),
+    std_logic_vector(to_unsigned(7,14)),
+    std_logic_vector(to_unsigned(6,14)),
+    std_logic_vector(to_unsigned(7,14)),
+    std_logic_vector(to_unsigned(7,14)),
+    std_logic_vector(to_unsigned(7,14)),
+    std_logic_vector(to_unsigned(7,14)),
+    std_logic_vector(to_unsigned(6,14)),
+    std_logic_vector(to_unsigned(5,14)),
+    std_logic_vector(to_unsigned(4,14)),
+    std_logic_vector(to_unsigned(3,14)),
+    std_logic_vector(to_unsigned(2,14)),
+    std_logic_vector(to_unsigned(1,14)),
+    std_logic_vector(to_unsigned(0,14))
 );
 
 -- dsp dedicated module
@@ -106,8 +109,9 @@ begin
 --    en_threshold <= signed(threshold(41 downto 28));
 
     -- trigger modification to compare the cross correlation output
-    s_threshold <= signed(threshold(27 downto 0));
-
+    -- s_threshold <= signed(threshold(27 downto 0));
+    s_threshold <= unsigned(threshold);
+ 
     -- instantiate all the necessary DSPs
 --------------------------------------------------------------------------------------------------------------------------------------------------
     st_xc_mult_gen: for i in 0 to 31 generate
@@ -163,7 +167,7 @@ begin
             elsif (enable='1') then
                 -- register the old values to keep track of how the calculation is behaving
                 -- do it only if the module is enabled to trigger
-                s_r_st_xc <= signed(r_st_xc(0));
+                s_r_st_xc <= unsigned(r_st_xc(0));
                 xcorr <= resize(s_r_st_xc,28);
                 xcorr_reg0 <= xcorr;
                 xcorr_reg1 <= xcorr_reg0;
