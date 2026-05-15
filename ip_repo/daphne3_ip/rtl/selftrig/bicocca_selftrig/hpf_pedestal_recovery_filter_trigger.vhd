@@ -59,7 +59,7 @@ signal suma_out: signed(15 downto 0);
 --signal tm_output_selector: std_logic;
 signal internal_afe_comp_enable: std_logic;
 signal triggered_xc: std_logic;
-signal xcorr_calc: unsigned(27 downto 0);
+signal xcorr_calc: signed(27 downto 0);
  
 component k_low_pass_filter
     port (
@@ -100,7 +100,7 @@ component st_xc
         din : in std_logic_vector(13 downto 0); -- filtered AFE data (no baseline)
         threshold : in std_logic_vector(27 downto 0); -- matching filter trigger threshold values --(41 downto 0)
         triggered : out std_logic;
-        xcorr_calc : out unsigned(27 downto 0)
+        xcorr_calc : out signed(27 downto 0)
     );
 end component st_xc;
 
@@ -213,7 +213,7 @@ begin
                 w_out <= (baseline_aux + hpf_out_aux);
 --                tm_output_selector <= '0';
             when "10" =>
-                w_out <= (lpf_out + signed('0' & xcorr_calc(14 downto 0)));
+                w_out <= (lpf_out + xcorr_calc(15 downto 0));
 --                tm_output_selector <= '1';
             when "11" =>
                 w_out <= x_i;
